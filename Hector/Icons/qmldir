@@ -1,0 +1,2 @@
+module Hector.Icons
+singleton HectorIcons 1.0 HectorIcons.qml

@@ -1,0 +1,22 @@
+module Hector.Controls
+AutoSizeGridView 1.0 AutoSizeGridView.qml
+AutoSizeText 1.0 AutoSizeText.qml
+DiagnosticStatus 1.0 DiagnosticStatus.qml
+CameraView 1.0 CameraView.qml
+Icon 1.0 Icon.qml
+MultiCameraGridView 1.0 MultiCameraGridView.qml
+Pill 1.0 Pill.qml
+Progress 1.0 Progress.qml
+ProgressWithText 1.0 ProgressWithText.qml
+RefreshButton 1.0 RefreshButton.qml
+ResizeHandle 1.0 ResizeHandle.qml
+RobotOrientationView 1.0 RobotOrientationView.qml
+RvizToolbar 1.0 RvizToolbar.qml
+SectionHeader 1.0 SectionHeader.qml
+SimpleToolTip 1.0 SimpleToolTip.qml
+Spacer 1.0 Spacer.qml
+SkeletonLoader 1.0 SkeletonLoader.qml
+SkeletonText 1.0 SkeletonText.qml
+TopicComboBox 1.0 TopicComboBox.qml
+TrackedUGV2DView 1.0 TrackedUGV2DView.qml
+WaterLevel 1.0 WaterLevel.qml
