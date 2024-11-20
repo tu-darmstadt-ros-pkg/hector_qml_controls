@@ -1,9 +1,8 @@
 import QtQuick 2.3
-import Ros2 1.0
-import Hector.Utils 1.0
+import Ros 1.0
 
 Object {
-  property var action: null
+  property RobotAction action: RobotAction { type: "none" }
   enum ExecutionState {
     Unknown,
     //! The execution is currently waiting to start (e.g. if the action client is still connecting)

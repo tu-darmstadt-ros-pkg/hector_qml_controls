@@ -3,7 +3,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.2
 import QtMultimedia 5.4
-import Ros2 1.0
+import Ros 1.0
 import Hector.Icons 1.0
 import Hector.Utils 1.0
 import "internal"
@@ -27,6 +27,7 @@ Item {
   property alias orientation: cameraView.orientation
 
   property var configuration
+  property real throttleRate: 0
   property alias showFramerate: cameraView.showFramerate
   property alias showLatency: cameraView.showLatency
   property alias controlsState: cameraView.controlsState
@@ -47,7 +48,8 @@ Item {
 
   Component {
     id: imageSubscriberComponent
-    ImageTransportSubscription {
+    ImageTransportSubscriber {
+      throttleRate: control.throttleRate
     }
   }
 

@@ -1,13 +1,13 @@
 import QtQuick 2.3
-import Ros2 1.0
-import Hector.Utils 1.0
+import Ros 1.0
+import ".."
 
 Object {
 
   function execute(action, execution) {
     execution.state = RobotActionExecution.ExecutionState.Running
     if (action._activeIndex == undefined) {
-      Ros2.warn("RobotActionExecutionManager: State of action '" + action.name + "' is not yet known. Assuming in state 0.")
+      Ros.warn("RobotActionExecutionManager: State of action '" + action.name + "' is not yet known. Assuming in state 0.")
     }
     
     let next = action._activeIndex == undefined ? 1 : action._activeIndex + 1
@@ -40,7 +40,7 @@ Object {
 
   function setup(action) {
     if (action.subactions.length == 0) {
-      Ros2.error("Register failed! No subactions for toggle RobotAction: " + action.name)
+      Ros.error("Register failed! No subactions for toggle RobotAction: " + action.name)
       return false
     }
     if (!action.topic) {
@@ -50,7 +50,7 @@ Object {
     }
     try {
       if (!d.subscribers[action.topic]) {
-        d.subscribers[action.topic] = Ros2.subscribe(action.topic, 10)
+        d.subscribers[action.topic] = Ros.subscribe(action.topic, 10)
       }
       const parser = new Function("msg", action.params)
       function updateIndex(msg) {
@@ -64,7 +64,7 @@ Object {
       if (!!d.subscribers[action.topic].message) updateIndex(d.subscribers[action.topic].message)
       return true
     } catch (e) {
-      Ros2.error("Failed to register action: " + e + "\nStack:\n---\n" + e.stack)
+      Ros.error("Failed to register action: " + e + "\nStack:\n---\n" + e.stack)
       return false
     }
     return true

@@ -2,7 +2,7 @@ import QtQuick 2.3
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.1
 import Hector.Utils 1.0
-import Ros2 1.0
+import Ros 1.0
 
 Item {
   id: root
@@ -37,7 +37,7 @@ Item {
   implicitWidth: mainLayout.implicitWidth
 
   Component.onCompleted: {
-    topicComboBox.model = Ros2.queryTopics("sensor_msgs/msg/Image").sort()
+    topicComboBox.model = Ros.queryTopics("sensor_msgs/Image").sort()
   }
 
   GridLayout {
@@ -72,7 +72,7 @@ Item {
         var transports = ["raw"]
         var topics = []
         if (editText.length > 0) {
-          topics = Ros2.queryTopics().filter(function (x) { return x.startsWith(editText + "/") })
+          topics = Ros.queryTopics().filter(function (x) { return x.startsWith(editText + "/") })
           topics = topics.map(function (x) { return x.substr(editText.length + 1)})
           topics = topics.filter(function(x) { return x.indexOf("/") === -1 })
         }

@@ -1,6 +1,5 @@
 import QtQuick 2.3
-import Ros2 1.0
-import Hector.Actions 1.0
+import Ros 1.0
 
 Object {
   id: root
@@ -26,7 +25,7 @@ Object {
 
   Connections {
     target: RobotActionExecutionManager
-    function onExecutionStarted(uuid, execution) {
+    onExecutionStarted: function (uuid, execution) {
       if (!action) return
       if (uuid && uuid == action.uuid) root.execution = execution
     }

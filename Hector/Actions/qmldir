@@ -1,5 +1,0 @@
-module Hector.Actions
-RobotAction 1.0 RobotAction.qml
-RobotActionExecution 1.0 execution/RobotActionExecution.qml
-singleton RobotActionExecutionManager 1.0 RobotActionExecutionManager.qml
-singleton RobotActionManager 1.0 RobotActionManager.qml

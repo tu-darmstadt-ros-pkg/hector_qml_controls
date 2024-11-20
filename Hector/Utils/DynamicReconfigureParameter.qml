@@ -1,5 +1,5 @@
 import QtQuick 2.3
-import Ros2 1.0
+import Ros 1.0
 
 Object {
   id: root
@@ -29,7 +29,7 @@ Object {
   property var value
   onValueChanged: d.updateValue(value)
 
-  Subscription {
+  Subscriber {
     id: descriptionSubscriber
     topic: namespace + "/parameter_descriptions"
     onNewMessage: {
@@ -49,7 +49,7 @@ Object {
         if (parameter) break
       }
       if (parameter == null) {
-        Ros2.warn("Could not find parameter '" + root.name + "' in namespace '" + root.namespace + "'!")
+        Ros.warn("Could not find parameter '" + root.name + "' in namespace '" + root.namespace + "'!")
         return
       }
       let member = d.getMemberForType(d.valueType)
@@ -83,9 +83,9 @@ Object {
     }
   }
 
-  Subscription {
+  Subscriber {
     topic: namespace + "/parameter_updates"
-    enabled: root.type != DynamicReconfigureParameter.Uninitialized
+    running: root.type != DynamicReconfigureParameter.Uninitialized
     onNewMessage: {
       if (root.type == DynamicReconfigureParameter.Uninitialized) return
       let values = message[d.getMemberForType(d.valueType)]
@@ -153,7 +153,7 @@ Object {
       req.config[d.getMemberForType(d.valueType)] = [{name: root.name, value: val}]
       Service.callAsync(root.namespace + "/set_parameters", "dynamic_reconfigure/Reconfigure", req, function (result) {
         if (!result) {
-          Ros2.warn("Failed to update parameter '" + root.name + "' in namespace '" + root.namespace + "' with value: " + val)
+          Ros.warn("Failed to update parameter '" + root.name + "' in namespace '" + root.namespace + "' with value: " + val)
           return
         }
         d.value = val
