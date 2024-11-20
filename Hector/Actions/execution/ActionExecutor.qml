@@ -1,17 +1,17 @@
 import QtQuick 2.3
-import Ros 1.0
-import ".."
+import Ros2 1.0
+import Hector.Utils 1.0
 
 Object {
 
   function execute(action, execution) {
     var client = d.actionClients[action.topic]
     if (!client || client.actionType !== action.messageType) {
-      Ros.error("Could not execute " + action.name + ": No available client! Did you register the robot action before execution?")
+      Ros2.error("Could not execute " + action.name + ": No available client! Did you register the robot action before execution?")
       return false
     }
     if (!client.connected) {
-      Ros.info("Action client not connected. Waiting for connection.")
+      Ros2.info("Action client not connected. Waiting for connection.")
       d.scheduleAction(client, action, execution)
     } else {
       d.sendActionGoal(client, action, execution)
@@ -37,11 +37,11 @@ Object {
 
   function setup(action) {
     if (!action.messageType) {
-      Ros.error("Register failed! Action type is not available for RobotAction: " + action.name)
+      Ros2.error("Register failed! Action type is not available for RobotAction: " + action.name)
       return false
     }
     if (!action.topic) {
-      Ros.error("Register failed! Action topic is not available for RobotAction: " + action.name)
+      Ros2.error("Register failed! Action topic is not available for RobotAction: " + action.name)
       return false
     }
     if (d.actionClients[action.topic]) {
@@ -50,35 +50,35 @@ Object {
         return true
       }
       if ( d.actionClients[action.topic].usageCount > 0 ) {
-        Ros.error("Failed to create action client with type '" + action.messageType + "' on '" + action.topic + "'. " +
+        Ros2.error("Failed to create action client with type '" + action.messageType + "' on '" + action.topic + "'. " +
                   "I already have an action of type '" + d.actionClients[action.topic].actionType + "' on this topic!")
         return false
       }
     }
-    d.actionClients[action.topic] = Ros.createActionClient(action.messageType, action.topic)
+    d.actionClients[action.topic] = Ros2.createActionClient(action.messageType, action.topic)
     d.actionClients[action.topic].usageCount = 1
-    Ros.debug("Created action client for '" + action.messageType + "' on " + action.topic)
+    Ros2.debug("Created action client for '" + action.messageType + "' on " + action.topic)
     return true
   }
 
   function free(action) {
     if (!action.messageType) {
-      Ros.error("Unregister failed! Action type is not available for RobotAction: " + action.name)
+      Ros2.error("Unregister failed! Action type is not available for RobotAction: " + action.name)
       return false
     }
     if (!action.topic) {
-      Ros.error("Unregister failed! Action topic is not available for RobotAction: " + action.name)
+      Ros2.error("Unregister failed! Action topic is not available for RobotAction: " + action.name)
       return false
     }
     if (!d.actionClients[action.topic]) {
-      Ros.warn("Tried to unregister action that is not registered.")
+      Ros2.warn("Tried to unregister action that is not registered.")
       return true // Warn but unregistering is successful if it wasn't registered in the first place.
     }
     if (d.actionClients[action.topic].actionType === action.messageType) {
       d.actionClients[action.topic].usageCount--
       return true
     }
-    Ros.warn("Tried to unregister action that was not registered successfully.")
+    Ros2.warn("Tried to unregister action that was not registered successfully.")
     return true
   }
 
@@ -159,7 +159,7 @@ Object {
           }
           if (now - scheduled.start < 10000) continue
 
-          Ros.warn("Timeout while waiting for action client to connect:" + scheduled.action.topic)
+          Ros2.warn("Timeout while waiting for action client to connect:" + scheduled.action.topic)
           scheduled.client.onConnectedChanged.disconnect(scheduled.callback)
           scheduled.execution.state = RobotActionExecution.ExecutionState.Timeout
           scheduled.execution.active = false

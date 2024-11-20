@@ -1,5 +1,5 @@
 import QtQuick 2.3
-import Ros 1.0
+import Ros2 1.0
 
 // Don't forget to reflect changes in RobotActionManagers cloneAction function
 // And if you change one of these properties remember to call updateAction in the RobotActionManager
@@ -35,7 +35,7 @@ QtObject {
       else if (typeof result === 'function') result = result()
     }
     if (typeof result === 'string') result = JSON.parse(result)
-    if (typeof result === 'function') Ros.error("RobotAction param was function but evaluateParams is not true!")
+    if (typeof result === 'function') Ros2.error("RobotAction param was function but evaluateParams is not true!")
     return result
   }
 

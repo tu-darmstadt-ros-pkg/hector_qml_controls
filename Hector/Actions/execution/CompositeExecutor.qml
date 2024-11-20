@@ -1,6 +1,6 @@
 import QtQuick 2.3
-import Ros 1.0
-import ".."
+import Ros2 1.0
+import Hector.Utils 1.0
 
 Object {
 
@@ -26,7 +26,7 @@ Object {
 
   function setup(action) {
     if (action.subactions.length == 0) {
-      Ros.error("Register failed! No subactions for composite RobotAction: " + action.name)
+      Ros2.error("Register failed! No subactions for composite RobotAction: " + action.name)
       return false
     }
     return true
@@ -45,7 +45,7 @@ Object {
       let state = RobotActionExecution.ExecutionState.Succeeded
       for(let i = 0; i < action.subactions.length; i++) {
         let subaction = RobotActionManager.getAction(action.subactions[i].action)
-        Ros.debug("Executing subaction: " + subaction.name)
+        Ros2.debug("Executing subaction: " + subaction.name)
         let subexecution = RobotActionExecutionManager.execute(subaction, true)
         if (!subexecution) {
           count_done++
@@ -85,7 +85,7 @@ Object {
         return
       }
       let subaction = RobotActionManager.getAction(action.subactions[index].action)
-      Ros.debug("Executing subaction: " + subaction.name)
+      Ros2.debug("Executing subaction: " + subaction.name)
       let subexecution = RobotActionExecutionManager.execute(subaction, true)
       execution.subexecutions = [subexecution]
       execution.progress = [index / action.subactions.length, (index + 1) / action.subactions.length]

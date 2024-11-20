@@ -2,7 +2,7 @@ import QtQuick 2.3
 import QtQuick.Controls 2.1
 import Hector.Controls 1.0
 import Hector.Utils 1.0
-import Ros 1.0
+import Ros2 1.0
 
 Item {
   id: control
@@ -69,7 +69,7 @@ Item {
     }
   }
 
-  Subscriber {
+  Subscription {
     id: imuSubscriber
   }
   

@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.1
-import Ros 1.0
+import Ros2 1.0
 
 Item {
   id: control
@@ -45,9 +45,9 @@ Item {
   //! If true will use rviz properties instead of the properties above
   property bool useRvizProperties: false
   //! If true will subscribe to the /joint_state topic to obtain the joint state values for each flipper joint
-  property alias subscribeJointStates: jointStateSubscriber.running
+  property alias subscribeJointStates: jointStateSubscriber.enabled
 
-  Subscriber {
+  Subscription {
     id: jointStateSubscriber
     topic: "/joint_states"
     onNewMessage: {

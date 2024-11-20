@@ -1,11 +1,14 @@
 pragma Singleton
 import QtQuick 2.3
 import QtQuick.Controls 2.2
-import Ros 1.0
-import "."
+import Ros2 1.0
+import Hector.Utils 1.0
 
 Object {
   id: root
+  signal actionRegistered(RobotAction action)
+  signal actionUnregistered(RobotAction action)
+  signal actionUpdated(RobotAction newAction, RobotAction oldAction)
 
   function getAction(uuid) {
     if (!uuid) return null
@@ -17,34 +20,35 @@ Object {
   function registerAction(action) {
     if (!action.uuid) action.uuid = Uuid.generate()
     let entry = d.actions[action.uuid]
+    if (entry && entry.action.equals(action)) {
+      entry._registerCount++
+      return true
+    }
+    let cleanAction = cloneAction(action)
     if (entry) {
-      if (entry.action.equals(action)) {
-        entry._registerCount++
-        return true
-      }
       if (entry._registerCount > 0) {
-        Ros.error("Registered a different action with the same uuid '" + action.uuid + "' as an existing action. " +
+        Ros2.error("Registered a different action with the same uuid '" + action.uuid + "' as an existing action. " +
                   "Action '" + entry.action.name + "' is overwritten by '" + action.name + "'.")
-        Ros.warn("Action is:\n" + JSON.stringify(action) + "\nRegistered was:\n" + JSON.stringify(entry.action))
+        Ros2.warn("Action is:\n" + JSON.stringify(action) + "\nRegistered was:\n" + JSON.stringify(entry.action))
+        actionUnregistered(entry.action)
       }
       entry.action.destroy()
     }
-    let cleanAction = cloneAction(action)
-    if (!RobotActionExecutionManager._setupAction(cleanAction)) return false
     d.actions[action.uuid] = {_registerCount: 1, action: cleanAction}
+    actionRegistered(cleanAction)
     return true
   }
 
   function updateAction(action) {
-    let execution = RobotActionExecutionManager.getExecution(action)
-    if (execution) return false
     let entry = d.actions[action.uuid]
-    RobotActionExecutionManager._freeResources(entry.action)
+    if (entry._locked) return false
     if (action != entry.action) {
-      entry.action.destroy()
+      let tmp = entry.action
       entry.action = cloneAction(action)
+      actionUpdated(entry.action, tmp)
+      tmp.destroy()
     }
-    return RobotActionExecutionManager._setupAction(entry.action)
+    return true
   }
 
   function unregisterAction(action) {
@@ -52,7 +56,7 @@ Object {
     if (!entry || entry._registerCount == 0) return
     entry._registerCount--
     if (entry._registerCount > 0) return
-    RobotActionExecutionManager._freeResources(entry.action)
+    actionUnregistered(entry.action)
   }
 
   function cloneAction(action) {

@@ -1,6 +1,6 @@
 import QtQuick 2.3
-import Ros 1.0
-import ".."
+import Ros2 1.0
+import Hector.Utils 1.0
 
 Object {
 
@@ -17,7 +17,7 @@ Object {
 
   function cancel(execution) {
     if (!execution.active) return true
-    Ros.debug("JavaScript can not be canceled!")
+    Ros2.debug("JavaScript can not be canceled!")
     return false
   }
 

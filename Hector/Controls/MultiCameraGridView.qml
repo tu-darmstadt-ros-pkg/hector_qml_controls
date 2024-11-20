@@ -2,7 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import QtMultimedia 5.4
-import Ros 1.0
+import Ros2 1.0
 import Hector.Utils 1.0
 
 Item {
@@ -10,7 +10,6 @@ Item {
   property var editable: true
   property bool transitionsEnabled: true
   property real spacing: Units.pt(4)
-  property real throttleRate: 0.2
   property var selectedCamera: null
   signal configurationUpdated
   property var configuration
@@ -39,13 +38,13 @@ Item {
       grid.positionViewAtIndex(i, GridView.Contain)
       var item = grid.getDelegateInstanceAt(i)
       if (!item) {
-        Ros.error("Could not get camera preview for " + name + "!")
+        Ros2.error("Could not get camera preview for " + name + "!")
         return
       }
       item.showFull()
       return
     }
-    Ros.error("Could not show camera with name '" + name + "' because it was not found!")
+    Ros2.error("Could not show camera with name '" + name + "' because it was not found!")
   }
 
   function _addCamera(config) {
@@ -66,10 +65,10 @@ Item {
 
   function _updateCamera(index, config) {
     if (index < 0 || configuration.cameras.length <= index) {
-      Ros.error("Can not update camera because index " + index + " does not exist!")
+      Ros2.error("Can not update camera because index " + index + " does not exist!")
       return
     }
-    Ros.warn("Update camera at " + index + ": " + config.name)
+    Ros2.warn("Update camera at " + index + ": " + config.name)
     var camera = configuration.cameras[index]
     camera.name = config.name
     camera.type = config.type
@@ -86,7 +85,7 @@ Item {
 
   function _deleteCamera(index) {
     if (index < 0 || configuration.cameras.length <= index) {
-      Ros.warn("Can not delete camera because index " + index + " does not exist!")
+      Ros2.warn("Can not delete camera because index " + index + " does not exist!")
       return
     }
     configuration.cameras.splice(index, 1)
@@ -151,7 +150,6 @@ Item {
         x: root.spacing / 2; y: root.spacing / 2
         width: grid.cellWidth - root.spacing; height: grid.cellHeight - root.spacing
         configuration: model.configuration && model.configuration.preview || model.configuration
-        throttleRate: root.throttleRate
         orientation: model.orientation
         showFramerate: false
         showLatency: false
@@ -182,7 +180,7 @@ Item {
             name: "full"
             ParentChange { target: cameraView; parent: root }
             AnchorChanges { target: cameraView; anchors.left: root.left; anchors.right: root.right; anchors.top: root.top; anchors.bottom: root.bottom }
-            PropertyChanges { target: cameraView; nameFont.pointSize: 16; canGoBack: true; showControls: true; configuration: model.configuration; throttleRate: 0 }
+            PropertyChanges { target: cameraView; nameFont.pointSize: 16; canGoBack: true; showControls: true; configuration: model.configuration }
           }
         ]
 

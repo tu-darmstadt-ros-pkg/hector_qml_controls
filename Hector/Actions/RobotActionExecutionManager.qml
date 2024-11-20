@@ -1,9 +1,9 @@
 pragma Singleton
 import QtQuick 2.3
 import QtQuick.Controls 2.2
-import Ros 1.0
-import "."
-import "action_executors"
+import Ros2 1.0
+import Hector.Utils 1.0
+import "execution"
 
 Object {
   id: root
@@ -34,14 +34,14 @@ Object {
       let uuid = typeof action_or_uuid === 'string' ? action_or_uuid : action_or_uuid.uuid
       let action = RobotActionManager.getAction(uuid)
       if (action == null) {
-        Ros.error("Could not execute action as it was not registered with the RobotActionManager! This is necessary to ensure the object won't be destroyed during execution.")
+        Ros2.error("Could not execute action as it was not registered with the RobotActionManager! This is necessary to ensure the object won't be destroyed during execution.")
         return false
       }
-      Ros.debug("Execute action " + action.name + "...")
+      Ros2.debug("Execute action " + action.name + "...")
       var execution = getExecution(action)
       if (execution !== null) {
         if (execution.active) {
-          Ros.error("Could not execute " + action.name + " since it is already running!")
+          Ros2.error("Could not execute " + action.name + " since it is already running!")
           return false
         }
         // When executing again, remove finished execution
@@ -80,7 +80,7 @@ Object {
       }
       return execution
     } catch (e) {
-      Ros.error("RobotActionExecutionManager: Executing robot action failed: " + e + "\nStack:\n---\n" + e.stack)
+      Ros2.error("RobotActionExecutionManager: Executing robot action failed: " + e + "\nStack:\n---\n" + e.stack)
       if (execution) {
         execution.state = RobotActionExecution.ExecutionState.Failed
         execution.active = false
@@ -102,10 +102,10 @@ Object {
       var execution = getExecution(uuid)
       if (execution == null) {
         let name = typeof action_or_uuid === 'string' ? "action with uuid " + uuid : action_or_uuid.name
-        Ros.error("Could not cancel " + name + "! No active execution found.")
+        Ros2.error("Could not cancel " + name + "! No active execution found.")
         return false
       }
-      Ros.debug("Canceling robot action '" + execution.action.name + "' with uuid: " + uuid)
+      Ros2.debug("Canceling robot action '" + execution.action.name + "' with uuid: " + uuid)
       if (!execution.active) return false // No need to cancel
       let result = true
       switch (execution.action.type) {
@@ -136,7 +136,7 @@ Object {
       execution.executionFinished()
       return result
     } catch (e) {
-      Ros.error("RobotActionExecutionManager: Canceling robot action failed: " + e + "\nStack:\n---\n" + e.stack)
+      Ros2.error("RobotActionExecutionManager: Canceling robot action failed: " + e + "\nStack:\n---\n" + e.stack)
       return false
     }
   }
@@ -160,11 +160,11 @@ Object {
       case 'none':
         return true
       default:
-        Ros.warn("Register failed! Unsupported action: " + JSON.stringify(action))
+        Ros2.warn("Register failed! Unsupported action: " + JSON.stringify(action))
         return false
       }
     } catch (e) {
-      Ros.error("Failed to register action: " + e + "\nStack:\n---\n" + e.stack)
+      Ros2.error("Failed to register action: " + e + "\nStack:\n---\n" + e.stack)
       return false
     }
   }
@@ -188,11 +188,11 @@ Object {
       case 'none':
         return true
       default:
-        Ros.warn("Unregister failed! Unsupported action: " + JSON.stringify(action))
+        Ros2.warn("Unregister failed! Unsupported action: " + JSON.stringify(action))
         return false
       }
     } catch (e) {
-      Ros.error("Failed to unregister action: " + e + "\nStack:\n---\n" + e.stack)
+      Ros2.error("Failed to unregister action: " + e + "\nStack:\n---\n" + e.stack)
       return false
     }
   }

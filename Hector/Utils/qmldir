@@ -4,10 +4,6 @@ DynamicReconfigureParameter 1.0 DynamicReconfigureParameter.qml
 HectorAlgorithms 1.0 algorithms.js
 Object 1.0 Object.qml
 ObjectUtils 1.0 objectutils.js
-RobotAction 1.0 RobotAction.qml
-RobotActionExecution 1.0 RobotActionExecution.qml
-singleton RobotActionExecutionManager 1.0 RobotActionExecutionManager.qml
-singleton RobotActionManager 1.0 RobotActionManager.qml
 RobotActionExecutor 1.0 RobotActionExecutor.qml
 singleton Units 1.0 Units.qml
 Uuid 1.0 uuid.js

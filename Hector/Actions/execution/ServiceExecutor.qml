@@ -1,13 +1,13 @@
 import QtQuick 2.3
-import Ros 1.0
-import ".."
+import Ros2 1.0
+import Hector.Utils 1.0
 
 Object {
 
   function execute(action, execution) {
     execution.state = RobotActionExecution.ExecutionState.Running
-    Service.callAsync(action.topic, action.messageType, action.getParams(), function (result) {
-      try { execution.result(result) } catch (e) { Ros.error("Handling service result failed: " + e) }
+    d.client.sendRequestAsync(action.getParams(), function (result) {
+      try { execution.result(result) } catch (e) { Ros2.error("Handling service result failed: " + e) }
       
       let state = result === false ? RobotActionExecution.ExecutionState.Failed : RobotActionExecution.ExecutionState.Succeeded
 
@@ -23,21 +23,25 @@ Object {
 
   function cancel(execution) {
     if (!execution.active) return true
-    Ros.debug("Services can not be canceled!")
+    Ros2.debug("Services can not be canceled!")
     return false
   }
 
   function setup(action) {
+    if (d.client && d.client.name == action.topic && d.client.type == action.messageType) return true
+    d.client = Ros2.createServiceClient(action.topic, action.type)
     return true
   }
 
   function free(action) {
+    d.client == null
     return true
   }
 
 
   QtObject {
     id: d
+    property var client
   }
 }
 
