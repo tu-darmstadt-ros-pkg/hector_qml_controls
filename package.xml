@@ -11,6 +11,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>hector_camera_server_qml</exec_depend>
   <exec_depend>qml-module-qtgraphicaleffects</exec_depend>
   <exec_depend>qml-module-qtquick2</exec_depend>
   <exec_depend>qml-module-qtquick-controls2</exec_depend>

@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.1
+import Hector.CameraServer 1.0
 import Hector.Utils 1.0
 import Ros2 1.0
 import "internal"
@@ -17,19 +18,22 @@ Dialog {
   focus: true
 
   function load(configuration) {
-    editVideoSource.load(configuration)
-    previewCheckbox.checked = !!configuration.preview
-    if (configuration.preview) editPreviewVideoSource.load(configuration.preview)
+    let index = cameraComboBox.model.findIndex(function(camera) {
+      return camera.name === configuration.camera
+    })
+    if (index < 0) {
+      cameraComboBox.model = [configuration.camera].concat(cameraComboBox.model)
+      index = 0
+    }
+    cameraComboBox.currentIndex = index
     cameraNameTextField.text = configuration.name
     cameraOrientationComboBox.currentIndex = configuration.orientation / 90
   }
 
   function reset() {
-    editVideoSource.reset()
-    editPreviewVideoSource.reset()
-    cameraNameTextField.text = "Unnamed"
+    cameraComboBox.currentIndex = 0
+    cameraNameTextField.text = ""
     cameraOrientationComboBox.currentIndex = 0
-    previewCheckbox.checked = false
   }
 
   /*!
@@ -51,8 +55,28 @@ Dialog {
     anchors.fill: parent
     columns: 2
 
+    // ------------- VIDEO SOURCE --------------
+
     Text {
       Layout.preferredWidth: Units.pt(60)
+      text: "Camera:"
+      font { weight: Font.Bold }
+    }
+
+    ComboBox {
+      id: cameraComboBox
+      Layout.fillWidth: true
+      textRole: "name"
+    }
+    
+    // ------------- VIDEO SETTINGS --------------
+    SectionHeader {
+      Layout.columnSpan: 2
+      Layout.fillWidth: true
+      text: "Settings"
+    }
+
+    Text {
       text: "Name:"
       font { weight: Font.Bold }
     }
@@ -62,44 +86,6 @@ Dialog {
       Layout.fillWidth: true
       cursorVisible: focus
       selectByMouse: true
-    }
-
-    // ------------- VIDEO SOURCE --------------
-    SectionHeader {
-      Layout.columnSpan: 2
-      Layout.fillWidth: true
-      text: "Video Source"
-    }
-
-    EditVideoSource {
-      id: editVideoSource
-      Layout.columnSpan: 2
-      Layout.fillWidth: true
-    }
-
-    Text {
-      text: "Preview"
-      font { weight: Font.Bold }
-    }
-
-    CheckBox {
-      id: previewCheckbox
-      Layout.alignment: Qt.AlignRight
-    }
-
-    EditVideoSource {
-      id: editPreviewVideoSource
-      Layout.columnSpan: 2
-      Layout.fillWidth: true
-      visible: previewCheckbox.checked
-    }
-
-
-    // ------------- VIDEO SETTINGS --------------
-    SectionHeader {
-      Layout.columnSpan: 2
-      Layout.fillWidth: true
-      text: "Settings"
     }
 
     Text {
@@ -114,15 +100,21 @@ Dialog {
     }
   }
   onAboutToShow: {
+    cameraComboBox.model = CameraServer.cameras
     cameraNameTextField.selectAll()
     cameraNameTextField.focus = true
   }
   onAccepted: {
-    var configuration = editVideoSource.configuration
-    configuration.name = cameraNameTextField.text
-    configuration.orientation = cameraOrientationComboBox.currentIndex * 90
-    if (previewCheckbox.checked) {
-      configuration.preview = editPreviewVideoSource.configuration
+    let camera = cameraComboBox.currentValue
+    if (!camera) {
+      return false
+    }
+    let configuration = {
+      id: camera.robot + '//' + camera.cameraId,
+      robot: camera.robot,
+      cameraId: camera.cameraId,
+      name: cameraNameTextField.text || camera.name,
+      orientation: cameraOrientationComboBox.currentIndex * 90
     }
     root.save(configuration)
     reset()

@@ -15,8 +15,7 @@ Item {
   property var configuration
   onConfigurationChanged: {
     if (!configuration) configuration = {}
-    if (!configuration.cameras) configuration.cameras = []
-    if (!Array.isArray(configuration.cameras)) configuration.cameras = []
+    if (!configuration.cameras || !Array.isArray(configuration.cameras)) configuration.cameras = []
     d.updateCameraList()
   }
 
@@ -26,38 +25,31 @@ Item {
     selectedCamera.showNormal()
   }
 
-  function selectCameraByName(name) {
-    if (!name) {
+  function selectCameraByName(id) {
+    if (!id) {
       hideCamera()
       return
     }
     for (var i = 0; i < root.configuration.cameras.length; ++i) {
       var camera = d.cameraList.get(i)
-      if (camera.name != name) continue
+      if (camera.id != id) continue
       if (selectedCamera != null) selectedCamera.showNormal()
       grid.positionViewAtIndex(i, GridView.Contain)
       var item = grid.getDelegateInstanceAt(i)
       if (!item) {
-        Ros2.error("Could not get camera preview for " + name + "!")
+        Ros2.error("Could not get camera preview for " + id + "!")
         return
       }
       item.showFull()
       return
     }
-    Ros2.error("Could not show camera with name '" + name + "' because it was not found!")
+    Ros2.error("Could not show camera with id '" + id + "' because it was not found!")
   }
 
   function _addCamera(config) {
     if (!configuration.cameras) configuration.cameras = []
     var camera = {}
-    camera.name = config.name
-    camera.type = config.type
-    camera.topic = config.topic
-    camera.transport = config.transport
-    camera.url = config.url
-    camera.codec = config.codec
-    camera.preview = config.preview
-    camera.orientation = config.orientation
+    _cloneCameraProps(camera, config)
     configuration.cameras.push(camera)
     root.configurationUpdated()
     d.updateCameraList()
@@ -68,19 +60,20 @@ Item {
       Ros2.error("Can not update camera because index " + index + " does not exist!")
       return
     }
-    Ros2.warn("Update camera at " + index + ": " + config.name)
+    Ros2.warn("Update camera at " + index + ": " + config.id)
     var camera = configuration.cameras[index]
-    camera.name = config.name
-    camera.type = config.type
-    camera.topic = config.topic
-    camera.transport = config.transport
-    camera.url = config.url
-    camera.codec = config.codec
-    camera.preview = config.preview
-    camera.orientation = config.orientation
+    _cloneCameraProps(camera, config)
     configuration.cameras[index] = camera
     root.configurationUpdated()
     d.updateCameraList()
+  }
+
+  function _cloneCameraProps(target, source) {
+    target.id = source.id
+    target.robot = source.robot
+    target.cameraId = source.cameraId
+    target.name = source.name
+    target.orientation = source.orientation
   }
 
   function _deleteCamera(index) {
@@ -104,9 +97,7 @@ Item {
       for (var i = 0; i < root.configuration.cameras.length; ++i) {
         var camera = d.cameraList.get(i)
         var entry = root.configuration.cameras[i]
-        if (camera.name != entry.name || camera.type != entry.type || camera.orientation != (parseInt(entry.orientation) || 0)) return true
-        if (camera.topic != entry.topic || camera.transport != (entry.transport || "compressed")) return true
-        if (camera.url != entry.url || camera.codec != entry.codec) return true
+        if (camera.name != entry.name || camera.id != entry.id || camera.orientation != (parseInt(entry.orientation) || 0)) return true
       }
       return false
     }
@@ -116,7 +107,7 @@ Item {
       d.cameraList.clear()
       for (var i = 0; i < root.configuration.cameras.length; ++i) {
         var entry = root.configuration.cameras[i]
-        let data = {name: entry.name, configuration: entry, orientation: parseInt(entry.orientation) || 0, source: null}
+        let data = {id: entry.id, name: entry.name, configuration: entry, orientation: parseInt(entry.orientation) || 0, source: null}
         d.cameraList.append(data)
       }
       d.cameraList = d.cameraList
@@ -147,15 +138,16 @@ Item {
         objectName: "cameraPreview"
         id: cameraView
         property int index: model.index
+        property var camera: model.configuration && model.configuration.camera
         x: root.spacing / 2; y: root.spacing / 2
         width: grid.cellWidth - root.spacing; height: grid.cellHeight - root.spacing
-        configuration: model.configuration && model.configuration.preview || model.configuration
+        configuration: model.configuration
         orientation: model.orientation
         showFramerate: false
         showLatency: false
         canGoBack: false
         showControls: false
-        name: model.name
+        name: model.configuration.name || (camera && camera.name) || "Unknown"
         nameFont.pointSize: 10
         enabled: root.selectedCamera === null || root.selectedCamera === cameraView
         state: "default"

@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.1
 import QtQuick.Window 2.2
 import QtMultimedia 5.4
 import Ros2 1.0
+import Hector.CameraServer 1.0
 import Hector.Icons 1.0
 import Hector.Utils 1.0
 import "internal"
@@ -46,31 +47,8 @@ Item {
   }
 
   Component {
-    id: imageSubscriberComponent
-    ImageTransportSubscription {
-    }
-  }
-
-  Component {
-    id: rtspComponent
-    MediaPlayer {
-      property string rtsp
-      property string codec
-      muted: true
-      function init() {
-        let pipeline = `gst-pipeline: rtspsrc location="${rtsp}" ! `
-        if (codec == "h265") pipeline += "rtph265depay ! h265parse"
-        else pipeline += "rtph264depay ! h264parse"
-        pipeline += " ! decodebin ! autovideosink name=qtvideosink sync=false"
-        source = pipeline
-        play()
-      }
-
-      property Timer timer: Timer {
-        running: parent.status == MediaPlayer.InvalidMedia; repeat: true; interval: 200
-        onTriggered: parent.play()
-      }
-    }
+    id: cameraStreamComponent
+    CameraStream {}
   }
 
   QtObject {
@@ -79,15 +57,14 @@ Item {
     function createSource(parent) {
       const config = control.configuration
       if (!config) return null
-      if (!config.type || config.type == "ROS")
-        return imageSubscriberComponent.createObject(parent, {'topic': config.topic, 'defaultTransport': config.transport || "compressed"})
-      return rtspComponent.createObject(parent, {'rtsp': config.url, 'codec': config.codec})
+      return cameraStreamComponent.createObject(parent, {'robot': config.robot, 'cameraId': config.cameraId})
     }
   }
 
   CameraViewImpl {
     id: cameraView
     anchors.fill: parent
+    name: control.configuration && control.configuration.name || ""
 
     enabled: control.enabled
     transitionsEnabled: control.transitionsEnabled

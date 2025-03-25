@@ -64,12 +64,8 @@ Item {
       if (!control.autoHideControls || clickToggled || controlsMouseArea.containsMouse) return "default"
       return "hidden"
     }
-    property bool canPause: control.allowPause && videoOutput.source && videoOutput.source.pause
+    property bool canPause: control.allowPause && videoOutput.source
     property bool isPaused: false
-    property var conn: Connections {
-      target: videoOutput.source
-      onPlaybackStateChanged: d.isPaused = control.allowPause && videoOutput.source.playbackState != MediaPlayer.PlayingState
-    } 
   }
 
   Rectangle {
