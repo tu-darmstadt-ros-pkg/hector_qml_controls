@@ -1,0 +1,3 @@
+module Hector.MultiRobot
+Robot 1.0 Robot.qml
+singleton RobotManager 1.0 RobotManager.qml
