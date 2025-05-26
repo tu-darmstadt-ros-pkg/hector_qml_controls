@@ -20,19 +20,25 @@ Item {
       if (!root.value || root.value.length !== 2) return parent.width
       return root.value[1] * parent.width - x
     }
+    onWidthChanged: {
+      indefiniteAnimation.from = -width / 3
+      indefiniteAnimation.to = width
+      indefiniteAnimation.restart()
+    }
     Rectangle {
       id: indefiniteProgressBar
       anchors.top: parent.top
       anchors.bottom: parent.bottom
       color: "gray"
-      width: root.width / 3
+      width: parent.width / 3
       x: -parent.width
       PropertyAnimation on x {
+        id: indefiniteAnimation
         from: -backgroundRectangle.width
         to: backgroundRectangle.width
         duration: 2000
-        running: !root.value || root.value.length == 2
         loops: Animation.Infinite
+        running: !root.value || root.value.length == 2
       }
     }
   }
