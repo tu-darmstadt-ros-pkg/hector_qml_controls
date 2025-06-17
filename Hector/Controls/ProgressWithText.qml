@@ -27,7 +27,9 @@ Item {
     height: 32
 
     AutoSizeText {
+      margins: 4
       color: backgroundTextColor
+      font.weight: Font.Bold
       text: root.text || d.displayText
     }
 
@@ -41,6 +43,8 @@ Item {
 
       AutoSizeText {
         fillTarget: backgroundRectangle
+        margins: 4
+        font.weight: Font.Bold
         color: foregroundTextColor
         text: root.text || d.displayText
       }
