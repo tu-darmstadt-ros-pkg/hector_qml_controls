@@ -38,25 +38,18 @@ Dialog {
 
   /*!
    *  Configuration is:
+   *    * id: {robot}//{cameraId}
+   *    * robot: string
+   *    * cameraId: string
    *    * name: string
-   *    * type: "ros|rtsp"
    *    * orientation: int - 0|90|180|270
-   *    * if type == ros:
-   *       * topic: string
-   *       * transport: string
-   *    * if type == rtsp:
-   *       * url: string
-   *       * codec: "h264|h265"
    */
   signal save(var configuration)
 
-  GridLayout {
+  ColumnLayout {
     id: mainLayout
     anchors.fill: parent
-    columns: 2
-
     // ------------- VIDEO SOURCE --------------
-
     Text {
       Layout.preferredWidth: Units.pt(60)
       text: "Camera:"
@@ -67,6 +60,7 @@ Dialog {
       id: cameraComboBox
       Layout.fillWidth: true
       textRole: "name"
+      displayText: currentValue && currentValue.name || "Select camera"
     }
     
     // ------------- VIDEO SETTINGS --------------
@@ -85,6 +79,7 @@ Dialog {
       id: cameraNameTextField
       Layout.fillWidth: true
       cursorVisible: focus
+      placeholderText: cameraComboBox.currentValue && cameraComboBox.currentValue.name || "Camera name"
       selectByMouse: true
     }
 
@@ -97,6 +92,12 @@ Dialog {
       id: cameraOrientationComboBox
       Layout.fillWidth: true
       model: [0, 90, 180, 270]
+    }
+  }
+  Connections {
+    target: CameraServer
+    function onCamerasChanged() {
+      cameraComboBox.model = CameraServer.cameras
     }
   }
   onAboutToShow: {
