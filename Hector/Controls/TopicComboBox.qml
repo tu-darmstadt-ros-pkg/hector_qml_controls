@@ -13,8 +13,20 @@ Item {
   property int type: TopicComboBox.Topic
   property string messageType // Can be specified optionally to only show topics of a given type
   property bool autoLoad: false
+
+  readonly property var loggerBlacklist: [
+    /[gs]et_loggers$/, /set_logger_level$/,  /[gs]et_logger_levels$/,
+  ]
+  readonly property var parametersBlacklist: [
+    /[gs]et_parameters$/, /get_parameter_types$/, /describe_parameters$/, /list_parameters$/,
+    /get_type_description$/, /set_parameters_atomically$/,
+  ]
+  readonly property var behaviorTreesBlacklist: [
+    /get_available_states$/, /get_available_transitions$/, /get_state$/, /get_transition_graph$/,
+  ]
   // Can be used to blacklist specific topics using regular expressions
-  property var blacklist: [/[gs]et_loggers$/, /set_logger_level$/, /set_camera_info/, /set_parameters/]
+  property var blacklist: [/set_camera_info$/].concat(loggerBlacklist, parametersBlacklist, behaviorTreesBlacklist)
+
 
   property alias currentIndex: comboBox.currentIndex
   property alias currentText: comboBox.currentText
