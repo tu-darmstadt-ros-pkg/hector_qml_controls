@@ -1,4 +1,5 @@
 import QtQuick 2.3
+import Hector.Utils 1.0
 import Ros2 1.0
 
 // Don't forget to reflect changes in RobotActionManagers cloneAction function

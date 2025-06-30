@@ -4,6 +4,19 @@ import Hector.Utils 1.0
 
 Object {
   id: root
+  enum Type {
+    Wheeled,
+    Tracked,
+    Legged,
+    Quadrotor
+  }
+  enum OperationMode {
+    Unknown,
+    Safe,
+    Teleoperation,
+    Manipulation,
+    Autonomous
+  }
   property string robot_id: ""
   property string name: ""
   property string namespace: ""
