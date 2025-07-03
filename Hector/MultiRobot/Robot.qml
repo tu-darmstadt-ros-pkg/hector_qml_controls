@@ -1,5 +1,6 @@
 import QtQuick 2.3
 import Ros2 1.0
+import Hector.Actions 1.0
 import Hector.Utils 1.0
 
 Object {
@@ -29,6 +30,9 @@ Object {
     status_message: ""
   })
   property var configuration: ({})
+  property var operationMode: Robot.OperationMode.Unknown
+  readonly property var actionManager: RobotActionManager {
+  }
   property bool isReady: false
 
 

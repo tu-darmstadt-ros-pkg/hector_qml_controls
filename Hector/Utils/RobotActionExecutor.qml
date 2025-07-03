@@ -1,12 +1,14 @@
 import QtQuick 2.3
 import Ros2 1.0
 import Hector.Actions 1.0
+import Hector.MultiRobot 1.0
 
 Object {
   id: root
-  property real timeout: 5000
+  property real timeout: 15000
   property var action: null
   property var execution: null
+  property Robot robot: null
   readonly property bool active: execution && execution.active || false
   readonly property string state: {
     if (!d.currentAction || d.currentAction.type !== 'toggle') return ''
@@ -16,16 +18,16 @@ Object {
 
   function execute(anonymous=false) {
     if (!action) return
-    RobotActionExecutionManager.execute(action, anonymous)
+    robot.actionManager.execute(action, anonymous)
   }
 
   function cancel() {
     if (!action) return
-    RobotActionExecutionManager.cancel(action)
+    robot.actionManager.cancel(action)
   }
 
   Connections {
-    target: RobotActionExecutionManager
+    target: robot && robot.actionManager
     function onExecutionStarted(uuid, execution) {
       if (!action) return
       if (uuid && uuid == action.uuid) root.execution = execution
@@ -33,21 +35,29 @@ Object {
   }
 
   Component.onCompleted: {
-    if (!action) return
-    RobotActionManager.registerAction(action)
-    d.currentAction = RobotActionManager.getAction(action.uuid)
-    var execution = RobotActionExecutionManager.getExecution(action.uuid)
+    if (!action || !robot) return
+    robot.actionManager.registerAction(action)
+    d.currentAction = robot.actionManager.getAction(action.uuid)
+    var execution = robot.actionManager.getExecution(action.uuid)
     if (execution !== null) root.execution = execution
   }
 
   Component.onDestruction: {
-    RobotActionManager.unregisterAction(action)
+    if (!robot || !action) return
+    robot.actionManager.unregisterAction(action)
   }
 
   onActionChanged: {
-    if (d.currentAction) RobotActionManager.unregisterAction(d.currentAction)
-    d.currentAction = RobotActionManager.getAction(action.uuid)
-    if (d.currentAction) RobotActionManager.registerAction(d.currentAction)
+    if (!robot) return
+    if (d.currentAction) robot.actionManager.unregisterAction(d.currentAction)
+    robot.actionManager.registerAction(action.uuid)
+    d.currentAction = robot.actionManager.getAction(action.uuid)
+  }
+
+  onRobotChanged: {
+    if (!action) return
+    robot.actionManager.registerAction(action.uuid)
+    d.currentAction = robot.actionManager.getAction(action.uuid)
   }
 
   QtObject {
