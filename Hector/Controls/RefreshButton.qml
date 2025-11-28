@@ -1,10 +1,13 @@
 import QtQuick 2.3
 import QtQuick.Controls 2.2
 import Hector.Icons 1.0
+import Hector.Utils 1.0
 
 Button {
   id: control
   property bool animate
+  implicitWidth: Units.pt(24)
+  implicitHeight: Units.pt(24)
   onAnimateChanged: {
     if (!animate) return
     reloadRotationAnimator.running = true
@@ -28,10 +31,10 @@ Button {
       running: false
 
       RotationAnimation {
-      target: reloadIcon
-      from: 0; to: 720
-      duration: 1000
-      easing.type: Easing.InOutQuad
+        target: reloadIcon
+        from: 0; to: 720
+        duration: 1000
+        easing.type: Easing.InOutQuad
       }
       PauseAnimation { duration: 500 }
       // Check if we should rotate another time

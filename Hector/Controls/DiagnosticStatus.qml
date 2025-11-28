@@ -34,6 +34,12 @@ Item {
                              "red"
         anchors.horizontalCenter: parent.horizontalCenter
       }
+        SimpleToolTip {
+          text: level === 0 ? "OK" :
+                level === 1 ? "Warning" :
+                              "Error"
+          visible: true
+        }
     }
 
     ColumnLayout {
@@ -46,6 +52,11 @@ Item {
         verticalAlignment: Text.AlignVCenter
         font.bold: header
         font.pointSize: header ? largeTextPointSize : smallTextPointSize
+
+        SimpleToolTip {
+          text: control.name
+          visible: nameText.truncated
+        }
       }
 
       // Status message, if any
@@ -58,13 +69,12 @@ Item {
         font.pointSize: smallTextPointSize
         font.italic: true
         visible: message
+
+        SimpleToolTip {
+          text: control.message
+          visible: messageText.truncated
+        }
       }
     }
-  }
-
-  SimpleToolTip {
-    text: control.message ? control.name + "\n" + control.message : control.name
-    delay: 50
-    visible: nameText.truncated || messageText.truncated
   }
 }
