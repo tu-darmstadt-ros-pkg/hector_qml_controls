@@ -1,8 +1,9 @@
 module Hector.Controls
 AutoSizeGridView 1.0 AutoSizeGridView.qml
 AutoSizeText 1.0 AutoSizeText.qml
-DiagnosticStatus 1.0 DiagnosticStatus.qml
 CameraView 1.0 CameraView.qml
+ComponentStatus 1.0 ComponentStatus.qml
+DiagnosticStatus 1.0 DiagnosticStatus.qml
 Icon 1.0 Icon.qml
 MultiCameraGridView 1.0 MultiCameraGridView.qml
 Pill 1.0 Pill.qml
