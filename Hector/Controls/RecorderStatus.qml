@@ -7,7 +7,7 @@ Item {
 
   property string name
   property string message
-  property int level      // 0 = ok, 1 = info/warn
+  property int level
   property bool header
 
   property int smallTextPointSize: 9
