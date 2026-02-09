@@ -45,6 +45,7 @@ Item {
       if (!control.useRvizProperties || !rviz) return null
       var prop = rviz.registerRosTopicProperty(rvizPropertyContainer, "IMU Topic", "", "sensor_msgs/Imu", "The topic where the robot's imu messages are published. Leave empty to use the active robot's namespace.")
       prop.valueChanged.connect(function (value) { if (value) control.topic = value })
+      if (prop.value) control.topic = prop.value
       return prop
     }
 
