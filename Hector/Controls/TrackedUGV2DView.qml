@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.1
 import Ros2 1.0
+import Hector.MultiRobot 1.0
 
 Item {
   id: control
@@ -25,31 +26,30 @@ Item {
 
   // Repaint on change
   onPitchChanged: robotCanvas.requestPaint()
-  onFrontLeftFlipperJoint: robotCanvas.requestPaint()
-  onFrontRightFlipperJoint: robotCanvas.requestPaint()
-  onBackLeftFlipperJoint: robotCanvas.requestPaint()
-  onBackRightFlipperJoint: robotCanvas.requestPaint()
-  onFrontLeftFlipperJointOffset: robotCanvas.requestPaint()
-  onFrontLeftFlipperJointMultiplier: robotCanvas.requestPaint()
-  onFrontLeftFlipperJointValue: robotCanvas.requestPaint()
-  onFrontRightFlipperJointOffset: robotCanvas.requestPaint()
-  onFrontRightFlipperJointMultiplier: robotCanvas.requestPaint()
-  onFrontRightFlipperJointValue: robotCanvas.requestPaint()
-  onBackLeftFlipperJointOffset: robotCanvas.requestPaint()
-  onBackLeftFlipperJointMultiplier: robotCanvas.requestPaint()
-  onBackLeftFlipperJointValue: robotCanvas.requestPaint()
-  onBackRightFlipperJointOffset: robotCanvas.requestPaint()
-  onBackRightFlipperJointMultiplier: robotCanvas.requestPaint()
-  onBackRightFlipperJointValue: robotCanvas.requestPaint()
+  onFrontLeftFlipperJointChanged: robotCanvas.requestPaint()
+  onFrontRightFlipperJointChanged: robotCanvas.requestPaint()
+  onBackLeftFlipperJointChanged: robotCanvas.requestPaint()
+  onBackRightFlipperJointChanged: robotCanvas.requestPaint()
+  onFrontLeftFlipperJointOffsetChanged: robotCanvas.requestPaint()
+  onFrontLeftFlipperJointMultiplierChanged: robotCanvas.requestPaint()
+  onFrontLeftFlipperJointValueChanged: robotCanvas.requestPaint()
+  onFrontRightFlipperJointOffsetChanged: robotCanvas.requestPaint()
+  onFrontRightFlipperJointMultiplierChanged: robotCanvas.requestPaint()
+  onFrontRightFlipperJointValueChanged: robotCanvas.requestPaint()
+  onBackLeftFlipperJointOffsetChanged: robotCanvas.requestPaint()
+  onBackLeftFlipperJointMultiplierChanged: robotCanvas.requestPaint()
+  onBackLeftFlipperJointValueChanged: robotCanvas.requestPaint()
+  onBackRightFlipperJointOffsetChanged: robotCanvas.requestPaint()
+  onBackRightFlipperJointMultiplierChanged: robotCanvas.requestPaint()
+  onBackRightFlipperJointValueChanged: robotCanvas.requestPaint()
 
   //! If true will use rviz properties instead of the properties above
   property bool useRvizProperties: false
-  //! If true will subscribe to the /joint_state topic to obtain the joint state values for each flipper joint
-  property alias subscribeJointStates: jointStateSubscriber.enabled
 
   Subscription {
     id: jointStateSubscriber
-    topic: "/joint_states"
+    topic: RobotManager.activeRobot.namespace + "/joint_states"
+    enabled: control.frontLeftFlipperJoint || control.frontRightFlipperJoint || control.backLeftFlipperJoint || control.backRightFlipperJoint
     onNewMessage: {
       if (!message.name) return
       var names = message.name.toArray()
