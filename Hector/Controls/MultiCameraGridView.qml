@@ -74,6 +74,8 @@ Item {
     target.cameraId = source.cameraId
     target.name = source.name
     target.orientation = source.orientation
+    target.streamIndex = source.streamIndex !== undefined ? source.streamIndex : -1
+    target.previewStreamIndex = source.previewStreamIndex !== undefined ? source.previewStreamIndex : -1
   }
 
   function _deleteCamera(index) {
@@ -172,7 +174,7 @@ Item {
             name: "full"
             ParentChange { target: cameraView; parent: root }
             AnchorChanges { target: cameraView; anchors.left: root.left; anchors.right: root.right; anchors.top: root.top; anchors.bottom: root.bottom }
-            PropertyChanges { target: cameraView; nameFont.pointSize: 16; canGoBack: true; showControls: true; configuration: model.configuration }
+            PropertyChanges { target: cameraView; nameFont.pointSize: 16; canGoBack: true; showControls: true; showLatency: true; configuration: model.configuration }
           }
         ]
 

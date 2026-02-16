@@ -79,11 +79,12 @@ Object {
       }
       if (!found) {
         root.hosts.append({name: message.name})
+        d.registerHost(message.name)
       }
       updateComponents(message)
       if (d.loading) return; // Ignore status updates while loading
       d.current_launch_config = message.launch_config || ""
-      let launch_config = d.getLaunchConfigName(message.launch_config || "")
+      let launch_config = d.getLaunchConfigName(message.name, message.launch_config || "")
       if ((launch_config == "None" || launch_config == "[custom]") && d.lastConfigUpdate > Date.now() - 5000) {
         return // Favor named launch configs for a while
       }
@@ -172,9 +173,9 @@ Object {
       return name.toLowerCase().replace(/[^a-z0-9_]/g, "_")
     }
 
-    function getLaunchConfigName(launch_config) {
+    function getLaunchConfigName(host, launch_config) {
       if (!launch_config || launch_config.length == 0) return "None"
-      if (launch_config.length > 20) return "[custom]"
+      if (host == launch_config || launch_config.length > 32) return "[custom]"
       return launch_config
     }
 
@@ -194,12 +195,19 @@ Object {
       for (let client of load_config_action_clients) {
         if (client.host == host) return client.client
       }
+      Ros2.debug("Creating client at: " + root.namespace + "/"  + root.name + "/" + sanitizeTopic(host)+ "/launch")
       let client = Ros2.createActionClient(
         root.namespace + "/" + root.name + "/" + sanitizeTopic(host) + "/launch",
         "hector_launch_manager_msgs/action/Launch"
       )
       load_config_action_clients.push({host: host, client: client})
       return client
+    }
+
+    function registerHost(host) {
+      // Initialize action client
+      Ros2.debug("Registering host: " + host)
+      d.getLoadLaunchConfigClient(host)
     }
   }
 }
