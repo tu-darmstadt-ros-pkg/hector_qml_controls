@@ -11,12 +11,12 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>hector_camera_server_qml</exec_depend>
   <exec_depend>qml-module-qtgraphicaleffects</exec_depend>
   <exec_depend>qml-module-qtquick2</exec_depend>
   <exec_depend>qml-module-qtquick-controls2</exec_depend>
   <exec_depend>qml-module-qtquick-layouts</exec_depend>
   <exec_depend>qml_ros2_plugin</exec_depend>
+  <exec_depend>ros_camera_server_qml</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
