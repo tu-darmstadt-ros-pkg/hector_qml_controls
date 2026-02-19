@@ -17,6 +17,7 @@ Object {
   function setActiveRobot(robot) {
     if (robot) {
       activeRobot = robotComponent.createObject(root, {
+        "robot_id": robot.robot_id,
         "name": robot.name || "",
         "namespace": robot.namespace,
         "configuration": robot.configuration || "default",

@@ -2,6 +2,7 @@ import QtQuick 2.3
 import QtQuick.Controls 2.1
 import Hector.Controls 1.0
 import Hector.Utils 1.0
+import Hector.MultiRobot 1.0
 import Ros2 1.0
 
 Item {
@@ -42,9 +43,9 @@ Item {
     }
     property var topicProperty: {
       if (!control.useRvizProperties || !rviz) return null
-      var prop = rviz.registerRosTopicProperty(rvizPropertyContainer, "IMU Topic", "/imu/data", "sensor_msgs/Imu", "The topic where the robot's imu messages are published")
-      prop.valueChanged.connect(function (value) { control.topic = value })
-      control.topic = prop.value
+      var prop = rviz.registerRosTopicProperty(rvizPropertyContainer, "IMU Topic", "", "sensor_msgs/Imu", "The topic where the robot's imu messages are published. Leave empty to use the active robot's namespace.")
+      prop.valueChanged.connect(function (value) { if (value) control.topic = value })
+      if (prop.value) control.topic = prop.value
       return prop
     }
 
@@ -71,6 +72,7 @@ Item {
 
   Subscription {
     id: imuSubscriber
+    topic: RobotManager.activeRobot.namespace + "/imu/data"
   }
   
   TrackedUGV2DView {

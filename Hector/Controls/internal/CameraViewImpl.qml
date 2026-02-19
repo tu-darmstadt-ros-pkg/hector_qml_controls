@@ -25,15 +25,17 @@ Item {
   property alias nameFont: nameLabel.font
   property alias orientation: videoOutput.orientation
 
+  //! The CameraStream that provides the video feed and latency info
+  property var stream: null
+
   property alias showFramerate: framerateRectangle.visible
   property alias showLatency: latencyRectangle.visible
   property alias controlsState: cameraControls.state
-  property alias source: videoOutput.source
 
   signal backRequested()
   signal popout()
 
-  function hide()  {
+  function hide() {
     control.backRequested()
   }
 
@@ -43,12 +45,11 @@ Item {
   }
   onFullscreenChanged: {
     if (fullscreen && parent != ApplicationWindow.overlay) {
-      d.parent = parent
+      d.previousParent = parent
       parent = ApplicationWindow.overlay
       fullscreen = true
-    } else {
-      parent = d.parent
-      fullscreen = false
+    } else if (!fullscreen && d.previousParent) {
+      parent = d.previousParent
     }
   }
 
@@ -57,15 +58,14 @@ Item {
 
     property bool clickToggled: false
     property bool showBackButton: control.canGoBack && !control.fullscreen
-    property QtObject parent
-    property var fill
-    property string state: {
+    property QtObject previousParent
+    property string controlsVisibility: {
       if (!control.showControls) return "hidden"
       if (!control.autoHideControls || clickToggled || controlsMouseArea.containsMouse) return "default"
       return "hidden"
     }
-    property bool canPause: control.allowPause && videoOutput.source
     property bool isPaused: false
+    property int latency: control.stream ? control.stream.latency : -1
   }
 
   Rectangle {
@@ -76,7 +76,34 @@ Item {
   VideoOutput {
     id: videoOutput
     anchors.fill: parent
-    onSourceChanged: source && source.init && source.init()
+    source: control.stream
+  }
+
+  // Latency overlay — semi-transparent pill, always in bottom-right to stay visible without blocking the view
+  Rectangle {
+    id: latencyRectangle
+    visible: true
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    anchors.margins: Units.pt(6)
+    radius: height / 2
+    color: d.latency < 0 ? "#88666666"
+         : d.latency < 100 ? "#8800aa00"
+         : d.latency < 300 ? "#88ddaa00"
+         : "#88dd3300"
+    implicitWidth: latencyText.implicitWidth + Units.pt(12)
+    implicitHeight: latencyText.implicitHeight + Units.pt(6)
+    opacity: controlsMouseArea.containsMouse || d.clickToggled ? 0.95 : 0.6
+    Behavior on opacity { NumberAnimation { duration: 200 } }
+    Behavior on color { ColorAnimation { duration: 300 } }
+
+    Text {
+      id: latencyText
+      anchors.centerIn: parent
+      text: d.latency >= 0 ? d.latency + " ms" : "—"
+      color: "white"
+      font.pointSize: 9
+    }
   }
 
   MouseArea {
@@ -84,22 +111,21 @@ Item {
     anchors.fill: parent
     hoverEnabled: control.autoHideControls
     onClicked: d.clickToggled = !d.clickToggled
+
     Item {
       id: cameraControls
       anchors.fill: parent
-      state: d.state
+      state: d.controlsVisibility
 
       states: [
         State {
           name: "default"
           PropertyChanges { target: controlsLayout; anchors.topMargin: Units.pt(4) }
-          PropertyChanges { target: latencyRectangle; anchors.bottomMargin: 0 }
           PropertyChanges { target: framerateRectangle; anchors.bottomMargin: 0 }
         },
         State {
           name: "hidden"
           PropertyChanges { target: controlsLayout; anchors.topMargin: -controlsLayout.height - 1 }
-          PropertyChanges { target: latencyRectangle; anchors.bottomMargin: -latencyRectangle.height - 1 }
           PropertyChanges { target: framerateRectangle; anchors.bottomMargin: -framerateRectangle.height - 1 }
         }
       ]
@@ -112,7 +138,6 @@ Item {
           enabled: control.transitionsEnabled
           ParallelAnimation {
             PropertyAnimation { target: controlsLayout; properties: "anchors.topMargin"; easing.type: Easing.InOutQuad }
-            PropertyAnimation { target: latencyRectangle; properties: "anchors.bottomMargin"; easing.type: Easing.InOutQuad }
             PropertyAnimation { target: framerateRectangle; properties: "anchors.bottomMargin"; easing.type: Easing.InOutQuad }
           }
         }
@@ -125,7 +150,7 @@ Item {
         implicitHeight: backLayout.height
         implicitWidth: backLayout.width
         color: nameLabel.text ? "#aa444444" : "transparent"
-        state: (d.state == "hidden" || !d.showBackButton) ? "nameOnly" : "full"
+        state: (d.controlsVisibility == "hidden" || !d.showBackButton) ? "nameOnly" : "full"
 
         states: [
           State {
@@ -179,12 +204,6 @@ Item {
             color: "white"
             font { pointSize: 16 }
           }
-
-          TextMetrics {
-            id: nameLabelMetrics
-            font: nameLabel.font
-            text: nameLabel.text
-          }
         }
       }
     }
@@ -197,8 +216,8 @@ Item {
 
       RoundButton {
         padding: 0
-        visible: d.canPause
-        
+        visible: control.allowPause && !!control.stream
+
         Text {
           anchors.centerIn: parent
           font.family: HectorIcons.fontFamily
@@ -214,13 +233,17 @@ Item {
           opacity: parent.down ? 1 : parent.hovered ? 0.8 : 0.6
         }
 
-        onClicked: d.isPaused ? control.source.play() : control.source.pause()
+        onClicked: {
+          if (!control.stream) return
+          d.isPaused ? control.stream.play() : control.stream.pause()
+          d.isPaused = !d.isPaused
+        }
       }
 
       RoundButton {
         padding: 0
         visible: control.allowPopout
-        
+
         Text {
           anchors.centerIn: parent
           font.family: HectorIcons.fontFamily
@@ -237,13 +260,12 @@ Item {
         }
 
         onClicked: control.popout()
-
       }
 
       RoundButton {
         padding: 0
         visible: control.fullscreen || control.allowFullscreen
-        
+
         Text {
           anchors.centerIn: parent
           font.family: HectorIcons.fontFamily
@@ -263,43 +285,10 @@ Item {
       }
     }
 
-    // Stats
-    Rectangle {
-      id: latencyRectangle
-      anchors.right: parent.right
-      anchors.bottom: parent.bottom
-      anchors.bottomMargin: -height - 1
-      color: "#aa444444"
-      implicitWidth: latencyText.implicitWidth + Units.pt(8)
-      implicitHeight: latencyText.implicitHeight + Units.pt(4)
-      MouseArea {
-        id: latencyMouseArea
-        anchors.fill: parent
-        hoverEnabled: true
-        propagateComposedEvents: true
-      }
-
-      Text {
-        id: latencyText
-        anchors.centerIn: parent
-
-        function displayLatency(latency) {
-          if (!latency || latency == -1) return 'Unknown'
-          return latency + 'ms'
-        }
-
-        text: displayLatency(videoOutput.source && videoOutput.source.latency)
-        color: "white"
-
-        ToolTip.text: "Network Latency: " + displayLatency(videoOutput.source && videoOutput.source.networkLatency) + "\n" +
-                      "Processing Latency: " + displayLatency(videoOutput.source && videoOutput.source.processingLatency)
-        ToolTip.visible: latencyMouseArea.containsMouse
-        ToolTip.delay: 500
-      }
-    }
-
+    // Framerate indicator
     Rectangle {
       id: framerateRectangle
+      visible: false
       anchors.left: parent.left
       anchors.bottom: parent.bottom
       anchors.bottomMargin: -height - 1
@@ -310,7 +299,7 @@ Item {
       Text {
         id: framerateText
         anchors.centerIn: parent
-        text: (videoOutput.source && videoOutput.source.framerate || 0).toFixed(0) + "FPS"
+        text: (control.stream && control.stream.framerate || 0).toFixed(0) + " FPS"
         color: "white"
       }
     }
