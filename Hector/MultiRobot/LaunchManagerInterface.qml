@@ -168,11 +168,6 @@ Object {
     property bool loading: false
     property real loading_started: 0
 
-    function sanitizeTopic(name) {
-      if (!name) return ""
-      return name.toLowerCase().replace(/[^a-z0-9_]/g, "_")
-    }
-
     function getLaunchConfigName(host, launch_config) {
       if (!launch_config || launch_config.length == 0) return "None"
       if (host == launch_config || launch_config.length > 32) return "[custom]"
@@ -184,7 +179,7 @@ Object {
         if (client.host == host) return client.client
       }
       let client = Ros2.createServiceClient(
-        root.namespace + "/" + root.name + "/" + sanitizeTopic(host) + "/get_launch_configs",
+        root.namespace + "/" + root.name + "/" + HectorRosUtils.sanitizeTopic(host) + "/get_launch_configs",
         "hector_launch_manager_msgs/srv/GetLaunchConfigs"
       )
       launch_config_service_clients.push({host: host, client: client})
@@ -197,7 +192,7 @@ Object {
       }
       Ros2.debug("Creating client at: " + root.namespace + "/"  + root.name + "/" + sanitizeTopic(host)+ "/launch")
       let client = Ros2.createActionClient(
-        root.namespace + "/" + root.name + "/" + sanitizeTopic(host) + "/launch",
+        root.namespace + "/" + root.name + "/" + HectorRosUtils.sanitizeTopic(host) + "/launch",
         "hector_launch_manager_msgs/action/Launch"
       )
       load_config_action_clients.push({host: host, client: client})
