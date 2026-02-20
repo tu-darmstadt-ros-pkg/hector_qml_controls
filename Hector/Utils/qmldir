@@ -2,6 +2,7 @@ module Hector.Utils
 singleton Conversions 1.0 Conversions.qml
 DynamicReconfigureParameter 1.0 DynamicReconfigureParameter.qml
 HectorAlgorithms 1.0 algorithms.js
+HectorRosUtils 1.0 rosutils.js
 Object 1.0 Object.qml
 ObjectUtils 1.0 objectutils.js
 RobotActionExecutor 1.0 RobotActionExecutor.qml
