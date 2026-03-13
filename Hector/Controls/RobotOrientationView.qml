@@ -58,11 +58,15 @@ Item {
     }
 
     function extractRoll(q) {
-      return Math.atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y))
+      // if driving in reverse, flip the pitch and roll so the levels still make sense
+      var roll = Math.atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y))
+      return driveDirectionSubscriber.message && driveDirectionSubscriber.message.data ? -roll : roll
     }
     
     function extractPitch(q) {
-      return Math.asin(2 * (q.w * q.y - q.z * q.x))
+      // if driving in reverse, flip the pitch and roll so the levels still make sense
+      var pitch = Math.asin(2 * (q.w * q.y - q.z * q.x))
+      return driveDirectionSubscriber.message && driveDirectionSubscriber.message.data ? -pitch : pitch
     }
 
     function extractYaw(q) {
@@ -73,6 +77,12 @@ Item {
   Subscription {
     id: imuSubscriber
     topic: RobotManager.activeRobot.namespace + "/imu/data"
+  }
+
+  Subscription {
+    id: driveDirectionSubscriber
+    topic: "/" + OcsManager.namespace + "/joy_teleop_direction"
+    messageType: "std_msgs/msg/Bool"
   }
   
   TrackedUGV2DView {
