@@ -3,6 +3,7 @@ import Ros2 1.0
 import Hector.Utils 1.0
 
 Object {
+  property var actionManager
 
   function execute(action, execution) {
     execution.state = RobotActionExecution.ExecutionState.Running
@@ -19,7 +20,7 @@ Object {
     execution.state = RobotActionExecution.ExecutionState.Canceling
     let successful = true
     for(var i = 0; i < execution.subexecutions.length; i++) {
-      successful &= RobotActionExecutionManager.cancel(execution.subexecutions[i].action, force)
+      successful &= actionManager.cancel(execution.subexecutions[i].action, force)
     }
     return successful
   }
@@ -44,9 +45,9 @@ Object {
       let count_done = 0
       let state = RobotActionExecution.ExecutionState.Succeeded
       for(let i = 0; i < action.subactions.length; i++) {
-        let subaction = RobotActionManager.getAction(action.subactions[i].action)
+        let subaction = actionManager.getAction(action.subactions[i].action)
         Ros2.debug("Executing subaction: " + subaction.name)
-        let subexecution = RobotActionExecutionManager.execute(subaction, true)
+        let subexecution = actionManager.execute(subaction, true)
         if (!subexecution) {
           count_done++
           continue
@@ -84,16 +85,16 @@ Object {
         d.setExecutionFinished(execution, RobotActionExecution.ExecutionState.Succeeded)
         return
       }
-      let subaction = RobotActionManager.getAction(action.subactions[index].action)
+      let subaction = actionManager.getAction(action.subactions[index].action)
       Ros2.debug("Executing subaction: " + subaction.name)
-      let subexecution = RobotActionExecutionManager.execute(subaction, true)
+      let subexecution = actionManager.execute(subaction, true)
       execution.subexecutions = [subexecution]
       execution.progress = [index / action.subactions.length, (index + 1) / action.subactions.length]
       let executedNext = false
       function executeNextSubaction() {
         if (executedNext) return
         executedNext = true
-        executeSequentialAction(action, execution, index+1)
+        executeSequential(action, execution, index+1)
       }
 
       subexecution.executionFinished.connect(executeNextSubaction)

@@ -8,7 +8,7 @@ Object {
   id: root
   signal actionRegistered(RobotAction action)
   signal actionUnregistered(RobotAction action)
-  signal actionUpdated(RobotAction newAction, RobotAction oldAction)
+  signal actionUpdated(RobotAction action)
   signal executionStarted(string uuid, RobotActionExecution execution)
 
   readonly property var activeExecutions: d.activeExecutions.filter(x => !x.anonymous)
@@ -35,29 +35,32 @@ Object {
       entry._registerCount++
       return true
     }
-    let cleanAction = cloneAction(action)
+    if (entry && entry._registerCount > 0) {
+      // Active references exist — update in-place to preserve shared pointers
+      Ros2.warn("Registered a different action with the same uuid '" + action.uuid + "'. " +
+                "Use updateAction() instead. Updating in-place to preserve references.")
+      _applyProperties(entry.action, action)
+      entry._registerCount++
+      actionUpdated(entry.action)
+      return true
+    }
+    // No active references (or no entry) — safe to create new
+    let newAction = _createAction(action)
     if (entry) {
-      if (entry._registerCount > 0) {
-        Ros2.error("Registered a different action with the same uuid '" + action.uuid + "' as an existing action. " +
-                  "Action '" + entry.action.name + "' is overwritten by '" + action.name + "'.")
-        Ros2.warn("Action is:\n" + JSON.stringify(action) + "\nRegistered was:\n" + JSON.stringify(entry.action))
-        actionUnregistered(entry.action)
-      }
       entry.action.destroy()
     }
-    d.actions[action.uuid] = {_registerCount: 1, action: cleanAction}
-    actionRegistered(cleanAction)
+    d.actions[action.uuid] = {_registerCount: 1, action: newAction}
+    actionRegistered(newAction)
     return true
   }
 
   function updateAction(action) {
     let entry = d.actions[action.uuid]
+    if (!entry) return false
     if (entry._locked) return false
-    if (action != entry.action) {
-      let tmp = entry.action
-      entry.action = cloneAction(action)
-      actionUpdated(entry.action, tmp)
-      tmp.destroy()
+    if (action !== entry.action) {
+      _applyProperties(entry.action, action)
+      actionUpdated(entry.action)
     }
     return true
   }
@@ -70,12 +73,12 @@ Object {
     actionUnregistered(entry.action)
   }
 
-  function cloneAction(action) {
+  function _createAction(action) {
     let subactions = []
     if (action.subactions) {
       for (let subaction of action.subactions) {
         if (typeof subaction.action === "string") subactions.push(subaction)
-        else subactions.push(cloneAction(subaction.action))
+        else subactions.push(_createAction(subaction.action))
       }
     }
     return actionComponent.createObject(root, {
@@ -91,6 +94,32 @@ Object {
       parallel: Conversions.toBoolean(action.parallel),
       anonymous: Conversions.toBoolean(action.anonymous)
     })
+  }
+
+  function _applyProperties(target, source) {
+    target.name = source.name
+    target.icon = source.icon
+    target.type = source.type
+    target.topic = source.topic
+    target.messageType = source.messageType
+    target.evaluateParams = Conversions.toBoolean(source.evaluateParams)
+    target.params = source.params
+    target.parallel = Conversions.toBoolean(source.parallel)
+    target.anonymous = Conversions.toBoolean(source.anonymous)
+    // Destroy old anonymous subaction QML objects before replacing
+    if (target.subactions) {
+      for (let old of target.subactions) {
+        if (typeof old.action !== "string" && old.action.destroy) old.action.destroy()
+      }
+    }
+    let subactions = []
+    if (source.subactions) {
+      for (let subaction of source.subactions) {
+        if (typeof subaction.action === "string") subactions.push(subaction)
+        else subactions.push(_createAction(subaction.action))
+      }
+    }
+    target.subactions = subactions
   }
 
 
@@ -319,10 +348,10 @@ Object {
     property var actions: ({})
     property var activeExecutions: []
     property ActionExecutor actionExecutor: ActionExecutor {}
-    property CompositeExecutor compositeExecutor: CompositeExecutor {}
+    property CompositeExecutor compositeExecutor: CompositeExecutor { actionManager: root }
     property JavaScriptExecutor javascriptExecutor: JavaScriptExecutor {}
     property ServiceExecutor serviceExecutor: ServiceExecutor {}
-    property ToggleExecutor toggleExecutor: ToggleExecutor {}
+    property ToggleExecutor toggleExecutor: ToggleExecutor { actionManager: root }
     property TopicExecutor topicExecutor: TopicExecutor {}
 
     function addExecution(execution) {

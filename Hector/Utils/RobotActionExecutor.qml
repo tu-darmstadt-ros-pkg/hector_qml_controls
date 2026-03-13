@@ -9,7 +9,7 @@ Object {
   property var action: null
   property var execution: null
   property Robot robot: null
-  readonly property bool active: execution && execution.active || false
+  readonly property bool active: execution && !!execution.active
   readonly property string state: {
     if (!d.currentAction || d.currentAction.type !== 'toggle') return ''
     if (d.currentAction._activeIndex === undefined) return 'Unknown'
@@ -17,12 +17,12 @@ Object {
   }
 
   function execute(anonymous=false) {
-    if (!action) return
+    if (!action || !robot) return
     robot.actionManager.execute(action, anonymous)
   }
 
   function cancel() {
-    if (!action) return
+    if (!action || !robot) return
     robot.actionManager.cancel(action)
   }
 
@@ -50,14 +50,17 @@ Object {
   onActionChanged: {
     if (!robot) return
     if (d.currentAction) robot.actionManager.unregisterAction(d.currentAction)
-    robot.actionManager.registerAction(action.uuid)
+    if (!action) return
+    robot.actionManager.registerAction(action)
     d.currentAction = robot.actionManager.getAction(action.uuid)
   }
 
   onRobotChanged: {
-    if (!action) return
-    robot.actionManager.registerAction(action.uuid)
+    if (!action || !robot) return
+    robot.actionManager.registerAction(action)
     d.currentAction = robot.actionManager.getAction(action.uuid)
+    var execution = robot.actionManager.getExecution(action.uuid)
+    if (execution !== null) root.execution = execution
   }
 
   QtObject {

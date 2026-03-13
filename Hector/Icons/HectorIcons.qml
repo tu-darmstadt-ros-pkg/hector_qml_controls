@@ -30,6 +30,7 @@ Object {
 
   // For codes check: https://pictogrammers.github.io/@mdi/font/6.1.95/
   // Or use this to browse the font: http://mathew-kurian.github.io/CharacterMap/
+  readonly property string chevronDown: iconFromCharCode(0xF0140)
   readonly property string exitFullscreen: iconFromCharCode(0xF0294)
   readonly property string fullscreen: iconFromCharCode(0xF0293)
   readonly property string pause: iconFromCharCode(0xF03E4)

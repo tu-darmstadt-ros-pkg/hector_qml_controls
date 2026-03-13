@@ -190,7 +190,7 @@ Object {
       for (let client of load_config_action_clients) {
         if (client.host == host) return client.client
       }
-      Ros2.debug("Creating client at: " + root.namespace + "/"  + root.name + "/" + sanitizeTopic(host)+ "/launch")
+      Ros2.debug("Creating client at: " + root.namespace + "/"  + root.name + "/" + HectorRosUtils.sanitizeTopic(host) + "/launch")
       let client = Ros2.createActionClient(
         root.namespace + "/" + root.name + "/" + HectorRosUtils.sanitizeTopic(host) + "/launch",
         "hector_launch_manager_msgs/action/Launch"

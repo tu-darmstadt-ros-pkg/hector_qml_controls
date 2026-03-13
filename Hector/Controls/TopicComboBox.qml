@@ -2,6 +2,7 @@ import QtQuick 2.3
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.1
 import Ros2 1.0
+import "."
 
 Item {
   id: control
@@ -28,10 +29,9 @@ Item {
   property var blacklist: [/set_camera_info$/].concat(loggerBlacklist, parametersBlacklist, behaviorTreesBlacklist)
 
 
-  property alias currentIndex: comboBox.currentIndex
-  property alias currentText: comboBox.currentText
+  property alias editText: comboBox.text
+  property alias currentText: comboBox.text
   property alias editable: comboBox.editable
-  property alias editText: comboBox.editText
   property alias model: comboBox.model
   property bool customValue: false
 
@@ -48,13 +48,10 @@ Item {
       width: height
       onClicked: reload(true)
     }
-    ComboBox {
+    FuzzySelector {
       id: comboBox
       Layout.fillWidth: true
-      // Workaround for a bug where selecting the last selected item after editing doesn't reset the text
-      onActivated: editText = model[index]
-      onCurrentIndexChanged: control.customValue = false
-      onEditTextChanged: control.customValue = !model.includes(editText)
+      onTextChanged: control.customValue = !model.includes(text)
     }
     Rectangle {
       Layout.fillWidth: true
@@ -94,14 +91,14 @@ Item {
 
     function updateModel(model) {
       let customValue = control.customValue
-      let previousValue = comboBox.editText
+      let previousValue = comboBox.text
       if (previousValue && model.includes(previousValue)) {
         var index = model.indexOf(previousValue)
         model.splice(index, 1)
         model.splice(0, 0, previousValue)
       }
       comboBox.model = model
-      if (customValue && previousValue != comboBox.editText) comboBox.editText = previousValue
+      if (customValue && previousValue != comboBox.text) comboBox.text = previousValue
       reloadButton.animate = false
     }
   }

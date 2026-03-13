@@ -2,7 +2,7 @@ import QtQuick 2.3
 import Hector.Utils 1.0
 import Ros2 1.0
 
-// Don't forget to reflect changes in RobotActionManagers cloneAction function
+// Don't forget to reflect changes in RobotActionManager's _createAction and _applyProperties functions
 // And if you change one of these properties remember to call updateAction in the RobotActionManager
 QtObject {
   property string uuid

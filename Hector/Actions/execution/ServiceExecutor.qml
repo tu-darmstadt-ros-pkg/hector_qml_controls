@@ -5,6 +5,12 @@ import Hector.Utils 1.0
 Object {
 
   function execute(action, execution) {
+    if (!d.client || d.client.name !== action.topic || d.client.type !== action.messageType) {
+      if (!setup(action)) {
+        Ros2.error("Could not setup service client for " + action.name + " on topic " + action.topic)
+        return false
+      }
+    }
     execution.state = RobotActionExecution.ExecutionState.Running
     d.client.sendRequestAsync(action.getParams(), function (result) {
       try { execution.result(result) } catch (e) { Ros2.error("Handling service result failed: " + e) }
@@ -29,12 +35,12 @@ Object {
 
   function setup(action) {
     if (d.client && d.client.name == action.topic && d.client.type == action.messageType) return true
-    d.client = Ros2.createServiceClient(action.topic, action.type)
+    d.client = Ros2.createServiceClient(action.topic, action.messageType)
     return true
   }
 
   function free(action) {
-    d.client == null
+    //d.client = null
     return true
   }
 

@@ -3,16 +3,17 @@ import Ros2 1.0
 import Hector.Utils 1.0
 
 Object {
+  property var actionManager
 
   function execute(action, execution) {
     execution.state = RobotActionExecution.ExecutionState.Running
     if (action._activeIndex == undefined) {
-      Ros2.warn("RobotActionExecutionManager: State of action '" + action.name + "' is not yet known. Assuming in state 0.")
+      Ros2.warn("RobotActionManager: State of action '" + action.name + "' is not yet known. Assuming in state 0.")
     }
     
     let next = action._activeIndex == undefined ? 1 : action._activeIndex + 1
     if (next == action.subactions.length) next = 0
-    let subexecution = RobotActionExecutionManager.execute(action.subactions[next].action, true)
+    let subexecution = actionManager.execute(action.subactions[next].action, true)
     if (!subexecution) return false
     execution.subexecutions.push(subexecution)
     execution.subexecutionsChanged()
@@ -35,7 +36,7 @@ Object {
   function cancel(execution, force) {
     if (!execution.active) return True
     execution.state = RobotActionExecution.ExecutionState.Canceling
-    return RobotActionExecutionManager.cancel(execution.subexecutions[0].action, force)
+    return actionManager.cancel(execution.subexecutions[0].action, force)
   }
 
   function setup(action) {
