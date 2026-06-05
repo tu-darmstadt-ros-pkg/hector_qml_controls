@@ -23,6 +23,7 @@ Object {
         "configuration": robot.configuration || "default",
         "isReady": true
       })
+      Ros2.info("Active robot set to: " + activeRobot.name + " (" + activeRobot.namespace + ")")
     } else {
       activeRobot = null
     }
@@ -40,7 +41,8 @@ Object {
   Subscription {
     topic: "robot_announcement"
     messageType: "hector_multi_robot_msgs/msg/RobotAnnouncement"
-    qos: Ros2.QoS().transient_local().reliable()
+    qos: Ros2.QoS().transient_local().reliable().keep_last(100)
+    throttleRate: 0 // Important, otherwise we might miss announcements that arrive within one frame of each other
     onNewMessage: {
       if (!message.name || !message.ros_namespace) {
         Ros2.error("Invalid robot announcement message: " + JSON.stringify(message))
@@ -56,11 +58,16 @@ Object {
           "configuration": message.configuration,
           "isReady": true
         })
-        robots.push(robot)
+        // Reassign instead of push so the `robots` property emits its change
+        // signal; bindings like the multi-robot switcher refresh on discovery.
+        robots = robots.concat(robot)
+        Ros2.info("Discovered robot: " + robot.name + " (" + robot.namespace + ")")
         if (!activeRobot) {
           activeRobot = robot
+          Ros2.info("Active robot set to: " + activeRobot.name + " (" + activeRobot.namespace + ")")
         }
       } else {
+        Ros2.info("Updated robot announcement: " + message.name + " (" + message.ros_namespace + ")")
         robot.configuration = message.configuration
         robot.isReady = true
       }
