@@ -35,7 +35,17 @@ Object {
     status_code: -1, // -1 means unknown, otherwise 0 is okay, !=0 is error
     status_message: ""
   })
+  //! Robot type from the announcement, e.g. "wheeled" | "tracked" | "legged" | ...
+  property string type: ""
+  //! Parsed { key: value } map from the announcement's keys[]/values[] arrays.
   property var configuration: ({})
+
+  //! Robot namespace converted to a tf frame prefix ("/athena" -> "athena/", "" -> "").
+  //! Frames forwarded to the global tf tree are prefixed with this.
+  readonly property string tfPrefix: namespace.replace(/^\/+/, "").replace(/\/*$/, namespace ? "/" : "")
+  //! The robot's base frame, already prefixed.
+  readonly property string baseFrame: tfPrefix + "base_link"
+
   property var operationMode: Robot.OperationMode.Unknown
   readonly property var actionManager: RobotActionManager {
   }

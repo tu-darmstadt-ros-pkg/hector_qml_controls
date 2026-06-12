@@ -20,13 +20,23 @@ Object {
         "robot_id": robot.robot_id,
         "name": robot.name || "",
         "namespace": robot.namespace,
-        "configuration": robot.configuration || "default",
+        "type": robot.type,
+        "configuration": robot.configuration,
         "isReady": true
       })
       Ros2.info("Active robot set to: " + activeRobot.name + " (" + activeRobot.namespace + ")")
     } else {
       activeRobot = null
     }
+  }
+
+  // Builds a { key: value } map from the announcement's parallel keys[]/values[] arrays.
+  function buildConfig(message) {
+    var cfg = {}
+    if (!message.keys || !message.values) return cfg
+    var keys = message.keys.toArray(), values = message.values.toArray()
+    for (var i = 0; i < keys.length; ++i) cfg[keys[i]] = values[i]
+    return cfg
   }
 
   QtObject {
@@ -49,13 +59,14 @@ Object {
         return
       }
 
-      let robot = robots.find(r => r.id == message.id)
+      let robot = robots.find(r => r.robot_id == message.id)
       if (!robot) {
         robot = robotComponent.createObject(root, {
           "robot_id": message.id,
           "name": message.name,
           "namespace": message.ros_namespace,
-          "configuration": message.configuration,
+          "type": message.type,
+          "configuration": buildConfig(message),
           "isReady": true
         })
         // Reassign instead of push so the `robots` property emits its change
@@ -68,7 +79,8 @@ Object {
         }
       } else {
         Ros2.info("Updated robot announcement: " + message.name + " (" + message.ros_namespace + ")")
-        robot.configuration = message.configuration
+        robot.type = message.type
+        robot.configuration = buildConfig(message)
         robot.isReady = true
       }
     }
