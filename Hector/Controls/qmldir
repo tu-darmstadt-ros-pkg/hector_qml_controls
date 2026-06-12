@@ -13,6 +13,7 @@ ProgressWithText 1.0 ProgressWithText.qml
 RefreshButton 1.0 RefreshButton.qml
 ResizeHandle 1.0 ResizeHandle.qml
 RobotOrientationView 1.0 RobotOrientationView.qml
+singleton RobotType 1.0 RobotType.qml
 RvizToolbar 1.0 RvizToolbar.qml
 SectionHeader 1.0 SectionHeader.qml
 SimpleToolTip 1.0 SimpleToolTip.qml
@@ -21,4 +22,5 @@ SkeletonLoader 1.0 SkeletonLoader.qml
 SkeletonText 1.0 SkeletonText.qml
 TopicComboBox 1.0 TopicComboBox.qml
 TrackedUGV2DView 1.0 TrackedUGV2DView.qml
+UGV2DView 1.0 UGV2DView.qml
 WaterLevel 1.0 WaterLevel.qml

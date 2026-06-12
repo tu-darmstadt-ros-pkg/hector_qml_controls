@@ -2,71 +2,43 @@ import QtQuick 2.3
 import QtQuick.Controls 2.1
 import Hector.Controls 1.0
 import Hector.Utils 1.0
-import Hector.MultiRobot 1.0
 import Ros2 1.0
 
+// Shows a robot's orientation: a 2D side view tilted by the robot's pitch plus roll/pitch
+// water levels. All robot-specific configuration is provided via properties so this control
+// is reusable and has no dependency on the multi-robot singletons.
 Item {
   id: control
-  // IMU topic where sensor_msgs/Imu is published
-  property alias topic: imuSubscriber.topic
-  property string frame 
-  property alias frontLeftFlipperJoint: robotView.frontLeftFlipperJoint
-  property alias frontRightFlipperJoint: robotView.frontRightFlipperJoint
-  property alias backLeftFlipperJoint: robotView.backLeftFlipperJoint
-  property alias backRightFlipperJoint: robotView.backRightFlipperJoint
-  property alias frontLeftFlipperJointOffset: robotView.frontLeftFlipperJointOffset
-  property alias frontLeftFlipperJointMultiplier: robotView.frontLeftFlipperJointMultiplier
-  property alias frontRightFlipperJointOffset: robotView.frontRightFlipperJointOffset
-  property alias frontRightFlipperJointMultiplier: robotView.frontRightFlipperJointMultiplier
-  property alias backLeftFlipperJointOffset: robotView.backLeftFlipperJointOffset
-  property alias backLeftFlipperJointMultiplier: robotView.backLeftFlipperJointMultiplier
-  property alias backRightFlipperJointOffset: robotView.backRightFlipperJointOffset
-  property alias backRightFlipperJointMultiplier: robotView.backRightFlipperJointMultiplier
+  //! IMU topic (sensor_msgs/Imu) whose orientation drives the view.
+  property alias imuTopic: imuSubscriber.topic
+  //! Robot type (RobotType.Value) and flipper configuration, forwarded to the 2D view.
+  property alias type: robotView.type
+  property alias flipperFrames: robotView.flipperFrames
+  property alias baseFrame: robotView.baseFrame
+  //! If true, roll and pitch are negated so the levels still make sense when driving in reverse.
+  property bool reverse: false
   property real horizontalLevelMinimum: -60
   property real horizontalLevelMaximum: 60
   property real verticalLevelMinimum: -60
   property real verticalLevelMaximum: 60
 
-  property bool useRvizProperties: false
-
   QtObject {
     id: d
-
-    // Rviz stuff
-    property var rvizPropertyContainer: control.useRvizProperties && rviz && rviz.registerPropertyContainer("Robot Orientation View", "Settings for the robot orientation view")
-    function registerTfFrameProperty(name, defaultValue, callback) {
-      if (!control.useRvizProperties || !rviz) return null
-      var prop = rviz.registerTfFrameProperty(rvizPropertyContainer, name, defaultValue)
-      prop.valueChanged.connect(callback)
-      callback(prop.value)
-      return prop
-    }
-    property var topicProperty: {
-      if (!control.useRvizProperties || !rviz) return null
-      var prop = rviz.registerRosTopicProperty(rvizPropertyContainer, "IMU Topic", "", "sensor_msgs/Imu", "The topic where the robot's imu messages are published. Leave empty to use the active robot's namespace.")
-      prop.valueChanged.connect(function (value) { if (value) control.topic = value })
-      if (prop.value) control.topic = prop.value
-      return prop
-    }
 
     property var orientation: {
       if (!imuSubscriber.message)
         return {w: 1, x: 0, y: 0, z: 0}
-      if (!control.frame) return imuSubscriber.message.orientation
-      // TODO transform
       return imuSubscriber.message.orientation
     }
 
     function extractRoll(q) {
-      // if driving in reverse, flip the pitch and roll so the levels still make sense
       var roll = Math.atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y))
-      return driveDirectionSubscriber.message && driveDirectionSubscriber.message.data ? -roll : roll
+      return control.reverse ? -roll : roll
     }
-    
+
     function extractPitch(q) {
-      // if driving in reverse, flip the pitch and roll so the levels still make sense
       var pitch = Math.asin(2 * (q.w * q.y - q.z * q.x))
-      return driveDirectionSubscriber.message && driveDirectionSubscriber.message.data ? -pitch : pitch
+      return control.reverse ? -pitch : pitch
     }
 
     function extractYaw(q) {
@@ -76,23 +48,15 @@ Item {
 
   Subscription {
     id: imuSubscriber
-    topic: RobotManager.activeRobot.namespace + "/imu/data"
   }
 
-  Subscription {
-    id: driveDirectionSubscriber
-    topic: "/" + OcsManager.namespace + "/joy_teleop_direction"
-    messageType: "std_msgs/msg/Bool"
-  }
-  
-  TrackedUGV2DView {
+  UGV2DView {
     id: robotView
     anchors.left: parent.left
     anchors.top: parent.top
     anchors.right: verticalLevel.left
     anchors.bottom: horizontalLevel.top
     pitch: d.extractPitch(d.orientation)
-    useRvizProperties: control.useRvizProperties
   }
 
   WaterLevel {
