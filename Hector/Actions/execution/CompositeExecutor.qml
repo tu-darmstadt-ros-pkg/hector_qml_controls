@@ -45,13 +45,14 @@ Object {
       let count_done = 0
       let state = RobotActionExecution.ExecutionState.Succeeded
       for(let i = 0; i < action.subactions.length; i++) {
-        let subaction = actionManager.getAction(action.subactions[i].action)
-        Ros2.debug("Executing subaction: " + subaction.name)
-        let subexecution = actionManager.execute(subaction, true)
+        // Pass the subaction reference (uuid or inline action object) straight to execute,
+        // which registers inline actions on demand. See ToggleExecutor for the same pattern.
+        let subexecution = actionManager.execute(action.subactions[i].action, true)
         if (!subexecution) {
           count_done++
           continue
         }
+        Ros2.debug("Executing subaction: " + subexecution.action.name)
         let finishHandled = false
         function onSubexecutionFinished() {
           if (finishHandled) return
@@ -85,9 +86,14 @@ Object {
         d.setExecutionFinished(execution, RobotActionExecution.ExecutionState.Succeeded)
         return
       }
-      let subaction = actionManager.getAction(action.subactions[index].action)
-      Ros2.debug("Executing subaction: " + subaction.name)
-      let subexecution = actionManager.execute(subaction, true)
+      let subexecution = actionManager.execute(action.subactions[index].action, true)
+      if (!subexecution) {
+        // Could not start this subaction (e.g. unknown uuid) — fail the whole sequence
+        // rather than silently skipping it and reporting success.
+        d.setExecutionFinished(execution, RobotActionExecution.ExecutionState.Failed)
+        return
+      }
+      Ros2.debug("Executing subaction: " + subexecution.action.name)
       execution.subexecutions = [subexecution]
       execution.progress = [index / action.subactions.length, (index + 1) / action.subactions.length]
       let executedNext = false

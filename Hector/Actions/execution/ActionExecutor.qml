@@ -97,7 +97,6 @@ Object {
     property var scheduledActions: []
 
     function statusToExecutionState(status) {
-      console.log("Update status " + status)
       if (status === ActionGoalStatus.Aborted)
         return RobotActionExecution.ExecutionState.Failed
       else if (status === ActionGoalStatus.Accepted)
@@ -132,7 +131,7 @@ Object {
         onFeedback(goal, feedback) { execution.feedback(feedback) },
         onResult(result) {
             try { execution.result(result.result) } catch (e) {}
-            console.log("Action result received: " + result.code)
+            Ros2.debug("Action result received: " + result.code)
             let state = d.statusToExecutionState(result.code)
 
             // Mark execution done if it wasn't canceled in the mean time

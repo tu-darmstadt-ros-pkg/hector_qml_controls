@@ -73,12 +73,21 @@ Object {
     actionUnregistered(entry.action)
   }
 
+  //! Clones an inline subaction descriptor ({action: <object>, name?: ...}), replacing the
+  //! inline action object with a created RobotAction so executors can read subaction.action.
+  function _wrapInlineSubaction(subaction) {
+    let wrapped = {}
+    for (let key in subaction) wrapped[key] = subaction[key]
+    wrapped.action = _createAction(subaction.action)
+    return wrapped
+  }
+
   function _createAction(action) {
     let subactions = []
     if (action.subactions) {
       for (let subaction of action.subactions) {
         if (typeof subaction.action === "string") subactions.push(subaction)
-        else subactions.push(_createAction(subaction.action))
+        else subactions.push(_wrapInlineSubaction(subaction))
       }
     }
     return actionComponent.createObject(root, {
@@ -116,7 +125,7 @@ Object {
     if (source.subactions) {
       for (let subaction of source.subactions) {
         if (typeof subaction.action === "string") subactions.push(subaction)
-        else subactions.push(_createAction(subaction.action))
+        else subactions.push(_wrapInlineSubaction(subaction))
       }
     }
     target.subactions = subactions
@@ -164,8 +173,9 @@ Object {
           Ros2.error("Could not execute action '" + action_or_uuid.name + "'! Could not register action.")
           return false
         }
+        // registerAction may have assigned a generated uuid to an inline action, so re-read it.
+        uuid = action_or_uuid.uuid
         action = getAction(uuid)
-        
       }
       Ros2.debug("Execute action " + action.name + "...")
       var execution = getExecution(action)
