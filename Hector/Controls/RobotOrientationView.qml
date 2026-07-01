@@ -37,7 +37,7 @@ Item {
     }
 
     function extractPitch(q) {
-      var pitch = Math.asin(2 * (q.w * q.y - q.z * q.x))
+      var pitch = 2 * Math.atan2(q.y, q.w)
       return control.reverse ? -pitch : pitch
     }
 
