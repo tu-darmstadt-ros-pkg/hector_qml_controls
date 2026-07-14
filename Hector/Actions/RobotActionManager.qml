@@ -101,6 +101,7 @@ Object {
       params: action.params,
       subactions: subactions,
       parallel: Conversions.toBoolean(action.parallel),
+      continueOnError: Conversions.toBoolean(action.continueOnError),
       anonymous: Conversions.toBoolean(action.anonymous)
     })
   }
@@ -114,6 +115,7 @@ Object {
     target.evaluateParams = Conversions.toBoolean(source.evaluateParams)
     target.params = source.params
     target.parallel = Conversions.toBoolean(source.parallel)
+    target.continueOnError = Conversions.toBoolean(source.continueOnError)
     target.anonymous = Conversions.toBoolean(source.anonymous)
     // Destroy old anonymous subaction QML objects before replacing
     if (target.subactions) {

@@ -15,6 +15,8 @@ QtObject {
   property var params
   property var subactions: []
   property bool parallel: false
+  //! For sequential composites: if true continue on error, if false stop sequence on first error
+  property bool continueOnError: false
   //! Whether this is an anonymous action which automatically makes all executions of this action anonymous
   property bool anonymous: false
   property var _activeIndex: undefined
@@ -22,7 +24,7 @@ QtObject {
   function getIndexOfSubaction(action_or_uuid) {
     if (!action_or_uuid) return null
     let uuid = typeof action_or_uuid === "string" ? action_or_uuid : action_or_uuid.uuid
-    for (let index = 0; index <= subactions.length; ++index) {
+    for (let index = 0; index < subactions.length; ++index) {
       let subaction_uuid = typeof subactions[index].action === "string" ? subactions[index].action : subactions[index].action.uuid
       if (subaction_uuid === uuid) return index
     }
@@ -56,6 +58,7 @@ QtObject {
     return uuid === action.uuid && name === action.name && type === action.type && topic === action.topic &&
            messageType === action.messageType && evaluateParams === Conversions.toBoolean(action.evaluateParams) &&
            params === action.params && parallel === Conversions.toBoolean(action.parallel) &&
+           continueOnError === Conversions.toBoolean(action.continueOnError) &&
            anonymous === Conversions.toBoolean(action.anonymous)
   }
 }

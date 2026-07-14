@@ -10,7 +10,7 @@ Object {
     if (action.parallel) {
       d.executeParallel(action, execution)
     } else {
-      d.executeSequential(action, execution, 0)
+      d.executeSequential(action, execution)
     }
     return true
   }
@@ -57,8 +57,8 @@ Object {
         function onSubexecutionFinished() {
           if (finishHandled) return
           finishHandled = true
-          // Use any non succeeded state but failed will override other states
-          if (state !== RobotActionExecution.ExecutionState.Succeeded) {
+          // If any subaction didn't succeed, the overall result is a partial failure.
+          if (subexecution.state !== RobotActionExecution.ExecutionState.Succeeded) {
             state = RobotActionExecution.ExecutionState.PartialFailure
           }
           count_done++
@@ -77,30 +77,50 @@ Object {
       }
     }
 
-    function executeSequential(action, execution, index) {
+    //! @param state Tracks the current index and how many actions have failed
+    function executeSequential(action, execution, state) {
+      if (!state) state = {}
+      if (!state.index) state.index = 0
+      if (!state.failed) state.failed = 0
       if (execution.state === RobotActionExecution.ExecutionState.Canceling) {
         d.setExecutionFinished(execution, RobotActionExecution.ExecutionState.Canceled)
         return
       }
-      if (index >= action.subactions.length) {
-        d.setExecutionFinished(execution, RobotActionExecution.ExecutionState.Succeeded)
+      if (state.index >= action.subactions.length) {
+        d.setExecutionFinished(execution, state.failed > 0 ? RobotActionExecution.ExecutionState.PartialFailure
+                                                           : RobotActionExecution.ExecutionState.Succeeded)
         return
       }
-      let subexecution = actionManager.execute(action.subactions[index].action, true)
+      let subexecution = actionManager.execute(action.subactions[state.index].action, true)
       if (!subexecution) {
-        // Could not start this subaction (e.g. unknown uuid) — fail the whole sequence
-        // rather than silently skipping it and reporting success.
+        // Could not start this subaction (e.g. unknown uuid). Without continueOnError fail the whole
+        // sequence rather than silently skipping it and reporting success.
+        if (action.continueOnError) {
+          state.index += 1
+          state.failed += 1
+          executeSequential(action, execution, state)
+          return
+        }
         d.setExecutionFinished(execution, RobotActionExecution.ExecutionState.Failed)
         return
       }
       Ros2.debug("Executing subaction: " + subexecution.action.name)
       execution.subexecutions = [subexecution]
-      execution.progress = [index / action.subactions.length, (index + 1) / action.subactions.length]
+      execution.progress = [state.index / action.subactions.length, (state.index + 1) / action.subactions.length]
       let executedNext = false
       function executeNextSubaction() {
         if (executedNext) return
         executedNext = true
-        executeSequential(action, execution, index+1)
+        let succeeded = subexecution.state === RobotActionExecution.ExecutionState.Succeeded
+        // Without continueOnError, stop and propagate the failure instead of advancing (and reporting
+        // success) when a subaction didn't succeed, e.g. the server rejected or aborted the goal.
+        if (!succeeded && !action.continueOnError) {
+          d.setExecutionFinished(execution, subexecution.state)
+          return
+        }
+        state.index += 1
+        state.failed += (succeeded ? 0 : 1)
+        executeSequential(action, execution, state)
       }
 
       subexecution.executionFinished.connect(executeNextSubaction)
