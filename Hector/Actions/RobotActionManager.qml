@@ -39,13 +39,21 @@ Object {
       // Active references exist — update in-place to preserve shared pointers
       Ros2.warn("Registered a different action with the same uuid '" + action.uuid + "'. " +
                 "Use updateAction() instead. Updating in-place to preserve references.")
+      _freeResources(entry.action)
       _applyProperties(entry.action, action)
       entry._registerCount++
+      if (!_setupAction(entry.action)) {
+        Ros2.error("Failed to set up updated action '" + entry.action.name + "'. It may not be executable.")
+      }
       actionUpdated(entry.action)
       return true
     }
     // No active references (or no entry) — safe to create new
     let newAction = _createAction(action)
+    if (!_setupAction(newAction)) {
+      newAction.destroy()
+      return false
+    }
     if (entry) {
       entry.action.destroy()
     }
@@ -59,7 +67,11 @@ Object {
     if (!entry) return false
     if (entry._locked) return false
     if (action !== entry.action) {
+      _freeResources(entry.action)
       _applyProperties(entry.action, action)
+      if (!_setupAction(entry.action)) {
+        Ros2.error("Failed to set up updated action '" + entry.action.name + "'. It may not be executable.")
+      }
       actionUpdated(entry.action)
     }
     return true
@@ -70,6 +82,7 @@ Object {
     if (!entry || entry._registerCount == 0) return
     entry._registerCount--
     if (entry._registerCount > 0) return
+    _freeResources(entry.action)
     actionUnregistered(entry.action)
   }
 
@@ -213,6 +226,17 @@ Object {
           break
         case "toggle":
           startedSuccessfully = d.toggleExecutor.execute(action, execution)
+          break
+        case "none":
+          // Nothing to do — finish immediately as succeeded
+          execution.state = RobotActionExecution.ExecutionState.Succeeded
+          execution.progress = 1
+          execution.active = false
+          execution.executionFinished()
+          break
+        default:
+          Ros2.error("Could not execute " + action.name + ": Unsupported action type '" + action.type + "'!")
+          startedSuccessfully = false
           break
       }
       if (!startedSuccessfully) {
@@ -383,6 +407,7 @@ Object {
       if (index === -1) return
       d.activeExecutions.splice(index, 1)
       if (!execution.anonymous) d.activeExecutionsChanged()
+      execution.destroy()
     }
   }
 }

@@ -48,7 +48,7 @@ Item {
 
   Subscription {
     id: jointStateSubscriber
-    topic: RobotManager.activeRobot.namespace + "/joint_states"
+    topic: RobotManager.activeRobot ? RobotManager.activeRobot.namespace + "/joint_states" : ""
     enabled: control.frontLeftFlipperJoint || control.frontRightFlipperJoint || control.backLeftFlipperJoint || control.backRightFlipperJoint
     onNewMessage: {
       if (!message.name) return

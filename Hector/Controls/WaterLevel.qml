@@ -2,10 +2,7 @@ import QtQuick 2.3
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.10
 import Hector.Controls 1.0
-import Hector.InternalControls 1.0
-import Hector.Style 1.0
 import Hector.Utils 1.0
-import Ros2 1.0
 
 Item {
   id: control

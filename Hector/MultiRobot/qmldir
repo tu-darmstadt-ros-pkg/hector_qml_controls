@@ -1,4 +1,5 @@
 module Hector.MultiRobot
+LaunchManagerInterface 1.0 LaunchManagerInterface.qml
 Robot 1.0 Robot.qml
 singleton RobotManager 1.0 RobotManager.qml
 singleton OcsManager 1.0 OcsManager.qml

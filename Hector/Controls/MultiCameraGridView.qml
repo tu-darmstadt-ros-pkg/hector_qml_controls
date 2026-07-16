@@ -22,7 +22,7 @@ Item {
   clip: true
 
   function hideCamera() {
-    selectedCamera.showNormal()
+    if (selectedCamera) selectedCamera.showNormal()
   }
 
   function selectCameraByName(id) {
@@ -96,19 +96,22 @@ Item {
 
     function checkForChanges() {
       if (root.configuration.cameras.length != d.cameraList.count) return true
-      for (var i = 0; i < root.configuration.cameras.length; ++i) {
-        var camera = d.cameraList.get(i)
-        var entry = root.configuration.cameras[i]
+      for (let i = 0; i < root.configuration.cameras.length; ++i) {
+        const camera = d.cameraList.get(i)
+        const entry = root.configuration.cameras[i]
         if (camera.name != entry.name || camera.id != entry.id || camera.orientation != (parseInt(entry.orientation) || 0)) return true
+        const config = camera.configuration || {}
+        if (config.streamIndex !== entry.streamIndex || config.previewStreamIndex !== entry.previewStreamIndex) return true
       }
       return false
     }
 
     function updateCameraList() {
       if (!checkForChanges()) return // Only update on changes to cameras
+      root.selectedCamera = null
       d.cameraList.clear()
-      for (var i = 0; i < root.configuration.cameras.length; ++i) {
-        var entry = root.configuration.cameras[i]
+      for (let i = 0; i < root.configuration.cameras.length; ++i) {
+        const entry = root.configuration.cameras[i]
         let data = {id: entry.id, name: entry.name, configuration: entry, orientation: parseInt(entry.orientation) || 0, source: null}
         d.cameraList.append(data)
       }

@@ -4,6 +4,7 @@ AutoSizeText 1.0 AutoSizeText.qml
 CameraView 1.0 CameraView.qml
 ComponentStatus 1.0 ComponentStatus.qml
 DiagnosticStatus 1.0 DiagnosticStatus.qml
+EditCameraDialog 1.0 EditCameraDialog.qml
 FuzzySelector 1.0 FuzzySelector.qml
 Icon 1.0 Icon.qml
 MultiCameraGridView 1.0 MultiCameraGridView.qml

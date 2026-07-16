@@ -168,7 +168,7 @@ DropArea {
         else if (rowHeights.length > 0) previewItem.height = rowHeights[rowHeights.length - 1]
         else previewItem.height = draggedItemHeight
         
-        if (previewItem.height > rowHeight) rowHeight = previewItemRow.height
+        if (previewItem.height > rowHeight) rowHeight = previewItem.height
       }
       if (rowHeight) rowHeights.push(rowHeight)
       gridView.height = y + rowHeight
@@ -193,11 +193,15 @@ DropArea {
         }
         if (index !== -1) {
           draggedItem = repeater.itemAt(index)
-          // We want to keep the preview element visible for children even if they leave, so we hide it on drop
-          drag.source.Drag.activeChanged.connect(function() {
+          // We want to keep the preview element visible for children even if they leave, so we hide it on drop.
+          // Self-disconnecting so repeated drags don't accumulate handlers.
+          let source = drag.source
+          function onDragActiveChanged() {
+            source.Drag.activeChanged.disconnect(onDragActiveChanged)
             d.hidePreview(true)
             d.layout()
-          })
+          }
+          source.Drag.activeChanged.connect(onDragActiveChanged)
           previousIndex = index
           previewVisualIndex = index
         }
@@ -209,7 +213,7 @@ DropArea {
     }
 
     function updatePreview(forceLayout) {
-      var pos = gridView.mapFromItem(root.parent, root.drag.x, root.drag.y)
+      var pos = gridView.mapFromItem(root, root.drag.x, root.drag.y)
       var index = computePreviewIndex(pos.x, pos.y)
       if (index > gridView.children.length - 2) index = gridView.children.length - 2 // Ignore the repeater and itself
       var needsRelayout = !!forceLayout

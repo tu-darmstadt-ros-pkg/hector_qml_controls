@@ -44,9 +44,12 @@ Item {
     if (!autoHideControls) controlsState = "default"
   }
   onFullscreenChanged: {
-    if (fullscreen && parent != ApplicationWindow.overlay) {
+    // ApplicationWindow.overlay is null in a plain Window (e.g. the popout) — reparenting to null
+    // would make the view vanish irrecoverably
+    const overlay = ApplicationWindow.overlay
+    if (fullscreen && overlay && parent != overlay) {
       d.previousParent = parent
-      parent = ApplicationWindow.overlay
+      parent = overlay
       fullscreen = true
     } else if (!fullscreen && d.previousParent) {
       parent = d.previousParent

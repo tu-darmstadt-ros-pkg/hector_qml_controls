@@ -95,6 +95,9 @@ Item {
       stream: popoutStream
       canGoBack: false
       allowPopout: false
+      // In popout window, the camera is already fullscreen
+      allowFullscreen: false
+      orientation: control.orientation
     }
   }
 }

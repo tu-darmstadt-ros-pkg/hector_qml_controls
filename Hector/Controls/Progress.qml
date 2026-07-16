@@ -17,7 +17,7 @@ Item {
     clip: true
     x: progressBar.width
     width: {
-      if (!root.value || root.value.length !== 2) return parent.width
+      if (!root.value || root.value.length !== 2) return parent.width - x
       return root.value[1] * parent.width - x
     }
     onWidthChanged: {
@@ -38,7 +38,7 @@ Item {
         to: backgroundRectangle.width
         duration: 2000
         loops: Animation.Infinite
-        running: !root.value || root.value.length == 2
+        running: root.value == null || (Array.isArray(root.value) && root.value.length === 2)
       }
     }
   }

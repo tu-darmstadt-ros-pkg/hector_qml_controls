@@ -35,37 +35,39 @@ Object {
   }
 
   Component.onCompleted: {
-    if (!action || !robot) return
-    robot.actionManager.registerAction(action)
-    d.currentAction = robot.actionManager.getAction(action.uuid)
-    var execution = robot.actionManager.getExecution(action.uuid)
-    if (execution !== null) root.execution = execution
+    d.completed = true
+    d.reconcile()
   }
 
-  Component.onDestruction: {
-    if (!robot || !action) return
-    robot.actionManager.unregisterAction(action)
-  }
+  Component.onDestruction: d.unregister()
 
-  onActionChanged: {
-    if (!robot) return
-    if (d.currentAction) robot.actionManager.unregisterAction(d.currentAction)
-    if (!action) return
-    robot.actionManager.registerAction(action)
-    d.currentAction = robot.actionManager.getAction(action.uuid)
-  }
-
-  onRobotChanged: {
-    if (!action || !robot) return
-    robot.actionManager.registerAction(action)
-    d.currentAction = robot.actionManager.getAction(action.uuid)
-    var execution = robot.actionManager.getExecution(action.uuid)
-    if (execution !== null) root.execution = execution
-  }
+  // Guarded by d.completed so the initial property assignments don't register a second time
+  onActionChanged: d.reconcile()
+  onRobotChanged: d.reconcile()
 
   QtObject {
     id: d
+    property bool completed: false
     property var currentAction: null
+    // The manager the current action was registered with, so a robot change unregisters there
+    property var registeredManager: null
+
+    function unregister() {
+      if (registeredManager && currentAction) registeredManager.unregisterAction(currentAction)
+      registeredManager = null
+      currentAction = null
+    }
+
+    function reconcile() {
+      if (!completed) return
+      unregister()
+      if (!root.action || !root.robot) return
+      root.robot.actionManager.registerAction(root.action)
+      currentAction = root.robot.actionManager.getAction(root.action.uuid)
+      registeredManager = root.robot.actionManager
+      let execution = root.robot.actionManager.getExecution(root.action.uuid)
+      if (execution !== null) root.execution = execution
+    }
   }
 }
 

@@ -34,7 +34,7 @@ Object {
   }
 
   function cancel(execution, force) {
-    if (!execution.active) return True
+    if (!execution.active) return true
     execution.state = RobotActionExecution.ExecutionState.Canceling
     return actionManager.cancel(execution.subexecutions[0].action, force)
   }
@@ -51,8 +51,10 @@ Object {
     }
     try {
       if (!d.subscribers[action.topic]) {
-        d.subscribers[action.topic] = Ros2.subscribe(action.topic, 10)
+        d.subscribers[action.topic] = {subscriber: Ros2.createSubscription(action.topic, 10), handlers: ({})}
       }
+      let entry = d.subscribers[action.topic]
+      if (entry.handlers[action.uuid]) return true // Already set up for this action
       const parser = new Function("msg", action.params)
       function updateIndex(msg) {
         let next = msg && parser(msg)
@@ -61,17 +63,22 @@ Object {
         }
         action._activeIndex = next
       }
-      d.subscribers[action.topic].newMessage.connect(updateIndex)
-      if (!!d.subscribers[action.topic].message) updateIndex(d.subscribers[action.topic].message)
+      entry.subscriber.newMessage.connect(updateIndex)
+      entry.handlers[action.uuid] = updateIndex
+      if (!!entry.subscriber.message) updateIndex(entry.subscriber.message)
       return true
     } catch (e) {
       Ros2.error("Failed to register action: " + e + "\nStack:\n---\n" + e.stack)
       return false
     }
-    return true
   }
 
   function free(action) {
+    if (!action.topic) return true
+    let entry = d.subscribers[action.topic]
+    if (!entry || !entry.handlers[action.uuid]) return true
+    entry.subscriber.newMessage.disconnect(entry.handlers[action.uuid])
+    delete entry.handlers[action.uuid]
     return true
   }
 

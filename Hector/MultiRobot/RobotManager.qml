@@ -16,14 +16,13 @@ Object {
 
   function setActiveRobot(robot) {
     if (robot) {
-      activeRobot = robotComponent.createObject(root, {
-        "robot_id": robot.robot_id,
-        "name": robot.name || "",
-        "namespace": robot.namespace,
-        "type": robot.type,
-        "configuration": robot.configuration,
-        "isReady": true
-      })
+      // Use the managed instance so identity comparisons and its action manager stay valid
+      let managed = robots.find(r => r.robot_id == robot.robot_id)
+      if (!managed) {
+        Ros2.error("Cannot set active robot: no robot with id '" + robot.robot_id + "' known.")
+        return
+      }
+      activeRobot = managed
       Ros2.info("Active robot set to: " + activeRobot.name + " (" + activeRobot.namespace + ")")
     } else {
       activeRobot = null

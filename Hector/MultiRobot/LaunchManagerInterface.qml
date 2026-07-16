@@ -26,7 +26,7 @@ Object {
     const client = d.getLaunchConfigServiceClient(server_name)
     client.sendRequestAsync({}, function(response) {
       if (!response) {
-        Ros2.error("Failed to get launch configs for server " + server_name + ": " + response.error)
+        Ros2.error("Failed to get launch configs for server " + server_name + ": service call failed")
         result_callback([])
         return
       }
@@ -53,6 +53,12 @@ Object {
     d.loading_started = Date.now()
     root.status = LaunchManagerInterface.Status.Loading
     client.sendGoalAsync({config: config}, {
+      onGoalResponse(goal) {
+        if (goal) return
+        d.loading = false
+        root.status = LaunchManagerInterface.Status.Error
+        Ros2.error("Launch goal for config " + config + " on host " + host + " was rejected.")
+      },
       onResult(result) {
         d.loading = false
         if (result && result.code === ActionGoalStatus.Succeeded) {
@@ -61,7 +67,7 @@ Object {
         } else {
           Ros2.error("Failed to load launch config " + config + " on host " + host + ": " + JSON.stringify(result))
         }
-        callback(result)
+        if (callback) callback(result)
       }
     })
   }
@@ -82,7 +88,12 @@ Object {
         d.registerHost(message.name)
       }
       updateComponents(message)
-      if (d.loading) return; // Ignore status updates while loading
+      if (d.loading) {
+        // Ignore status updates while loading, but recover if the goal never delivered a result
+        if (d.loading_started > Date.now() - 15000) return
+        d.loading = false
+        root.status = LaunchManagerInterface.Status.Error
+      }
       d.current_launch_config = message.launch_config || ""
       let launch_config = d.getLaunchConfigName(message.name, message.launch_config || "")
       if ((launch_config == "None" || launch_config == "[custom]") && d.lastConfigUpdate > Date.now() - 5000) {

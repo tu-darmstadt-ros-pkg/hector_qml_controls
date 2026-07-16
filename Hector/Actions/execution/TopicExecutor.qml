@@ -5,13 +5,13 @@ import Hector.Utils 1.0
 Object {
 
   function execute(action, execution) {
-    var publisher = d.publishers[action.topic]
-    if (!publisher || publisher.type !== action.messageType) {
+    var entry = d.publishers[action.topic]
+    if (!entry || entry.publisher.type !== action.messageType) {
       Ros2.error("Could not execute " + action.name + ": No available publisher! Did you register the robot action before execution?")
       return false
     }
     execution.state = RobotActionExecution.ExecutionState.Running
-    publisher.publish(action.getParams())
+    entry.publisher.publish(action.getParams())
     
     execution.state = RobotActionExecution.ExecutionState.Succeeded
     execution.progress = 1
@@ -35,19 +35,19 @@ Object {
       Ros2.error("Register failed! Publisher topic is not set for RobotAction: " + action.name)
       return false
     }
-    if (d.publishers[action.topic]) {
-      if (d.publishers[action.topic].type === action.messageType) {
-        d.publishers[action.topic].usageCount++
+    let entry = d.publishers[action.topic]
+    if (entry) {
+      if (entry.publisher.type === action.messageType) {
+        entry.usageCount++
         return true
       }
-      if (d.publishers[action.topic].usageCount > 0) {
+      if (entry.usageCount > 0) {
         Ros2.error("Failed to create publisher with type '" + action.messageType + "' on '" + action.topic + "'. " +
-                  "I already have a publisher of type '" + d.publishers[action.topic].type + "' on this topic!")
+                  "I already have a publisher of type '" + entry.publisher.type + "' on this topic!")
         return false
       }
     }
-    d.publishers[action.topic] = Ros2.advertise(action.messageType, action.topic, 10, false)
-    d.publishers[action.topic].usageCount = 1
+    d.publishers[action.topic] = {publisher: Ros2.createPublisher(action.topic, action.messageType, 10), usageCount: 1}
     Ros2.debug("Advertised publisher for '" + action.messageType + "' on " + action.topic)
     return true
   }
@@ -65,7 +65,7 @@ Object {
       Ros2.warn("Tried to unregister publisher that is not registered.")
       return true // Warn but unregistering is successful if it wasn't registered in the first place.
     }
-    if (d.publishers[action.topic].actionType === action.messageType) {
+    if (d.publishers[action.topic].publisher.type === action.messageType) {
       d.publishers[action.topic].usageCount--
       return true
     }

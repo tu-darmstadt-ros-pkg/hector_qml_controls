@@ -5,14 +5,15 @@ import Hector.Utils 1.0
 Object {
 
   function execute(action, execution) {
-    var client = d.actionClients[action.topic]
-    if (!client) {
+    var entry = d.actionClients[action.topic]
+    if (!entry) {
       if (!setup(action)) {
         Ros2.error("Could not setup action client for " + action.name + " on topic " + action.topic)
         return false
       }
-      client = d.actionClients[action.topic]
+      entry = d.actionClients[action.topic]
     }
+    var client = entry.client
     if (client.actionType !== action.messageType) {
       Ros2.error("Could not execute " + action.name + ": Action type mismatch! " +
                  "Action type is '" + action.messageType + "' but already existing client for this topic is of type '" + client.actionType + "'")
@@ -29,9 +30,9 @@ Object {
 
   function cancel(execution) {
     if (!execution.active) return true
-    let client = d.actionClients[execution.action.topic]
+    let entry = d.actionClients[execution.action.topic]
     execution.state = RobotActionExecution.ExecutionState.Canceling
-    if (!client.ready || !execution.actionGoal) {
+    if (!entry || !entry.client.ready || !execution.actionGoal) {
       d.removeScheduledAction(execution.action)
       
       execution.state = RobotActionExecution.ExecutionState.Canceled
@@ -52,19 +53,19 @@ Object {
       Ros2.error("Register failed! Action topic is not available for RobotAction: " + action.name)
       return false
     }
-    if (d.actionClients[action.topic]) {
-      if (d.actionClients[action.topic].actionType === action.messageType) {
-        d.actionClients[action.topic].usageCount++
+    let entry = d.actionClients[action.topic]
+    if (entry) {
+      if (entry.client.actionType === action.messageType) {
+        entry.usageCount++
         return true
       }
-      if ( d.actionClients[action.topic].usageCount > 0 ) {
+      if (entry.usageCount > 0) {
         Ros2.error("Failed to create action client with type '" + action.messageType + "' on '" + action.topic + "'. " +
-                  "I already have an action of type '" + d.actionClients[action.topic].actionType + "' on this topic!")
+                  "I already have an action of type '" + entry.client.actionType + "' on this topic!")
         return false
       }
     }
-    d.actionClients[action.topic] = Ros2.createActionClient(action.topic, action.messageType)
-    d.actionClients[action.topic].usageCount = 1
+    d.actionClients[action.topic] = {client: Ros2.createActionClient(action.topic, action.messageType), usageCount: 1}
     Ros2.debug("Created action client for '" + action.messageType + "' on " + action.topic)
     return true
   }
@@ -82,7 +83,7 @@ Object {
       Ros2.warn("Tried to unregister action that is not registered.")
       return true // Warn but unregistering is successful if it wasn't registered in the first place.
     }
-    if (d.actionClients[action.topic].actionType === action.messageType) {
+    if (d.actionClients[action.topic].client.actionType === action.messageType) {
       d.actionClients[action.topic].usageCount--
       return true
     }
@@ -177,12 +178,12 @@ Object {
           running = false
           return
         }
-        var now = new Date()
-        for (var i = d.scheduledActions.length - 1; i >= 0; --i) {
-          var scheduled = d.scheduledActions[i]
+        const now = new Date()
+        for (let i = d.scheduledActions.length - 1; i >= 0; --i) {
+          let scheduled = d.scheduledActions[i]
           if (scheduled.client.ready) {
+            // sendActionGoal deschedules (and disconnects) the entry itself
             d.sendActionGoal(scheduled.client, scheduled.action, scheduled.execution)
-            d.scheduledActions.splice(i, 1)
             continue
           }
           if (now - scheduled.start < 10000) continue

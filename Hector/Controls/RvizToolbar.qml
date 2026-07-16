@@ -21,8 +21,9 @@ Item {
       id: control
       Layout.fillHeight: true
       Layout.preferredWidth: root.showText ? content.implicitWidth : root.height
-      checkable: modelData.isSelected
-      checked: modelData.isSelected
+      checkable: true
+      // Binding element so the click-toggle doesn't destroy the declarative binding
+      Binding on checked { value: modelData.isSelected }
       flat: root.flat
       autoExclusive: true
 

@@ -19,17 +19,18 @@ Object {
     if (!execution.active) return true
     execution.state = RobotActionExecution.ExecutionState.Canceling
     let successful = true
-    for(var i = 0; i < execution.subexecutions.length; i++) {
-      successful &= actionManager.cancel(execution.subexecutions[i].action, force)
+    // Snapshot: canceling a subexecution can finish it synchronously, which splices
+    // subexecutions mid-iteration (see onSubexecutionFinished) and would skip entries.
+    for (let subexecution of execution.subexecutions.slice()) {
+      if (!subexecution.active) continue // Already finished, nothing to cancel
+      successful = actionManager.cancel(subexecution.action, force) && successful
     }
     return successful
   }
 
   function setup(action) {
-    if (action.subactions.length == 0) {
-      Ros2.error("Register failed! No subactions for composite RobotAction: " + action.name)
-      return false
-    }
+    // An empty composite is a valid no-op: it may be registered before its subactions are populated
+    // (e.g. a "Drive to waypoints" action registered up front, then filled in as waypoints are added).
     return true
   }
 
@@ -44,12 +45,22 @@ Object {
     function executeParallel(action, execution) {
       let count_done = 0
       let state = RobotActionExecution.ExecutionState.Succeeded
+      if (action.subactions.length === 0) {
+        d.setExecutionFinished(execution, state)
+        return
+      }
       for(let i = 0; i < action.subactions.length; i++) {
         // Pass the subaction reference (uuid or inline action object) straight to execute,
         // which registers inline actions on demand. See ToggleExecutor for the same pattern.
         let subexecution = actionManager.execute(action.subactions[i].action, true)
         if (!subexecution) {
+          // Subaction could not be started — count it as done but report partial failure
+          state = RobotActionExecution.ExecutionState.PartialFailure
           count_done++
+          execution.progress = [count_done / action.subactions.length, 1]
+          if (count_done >= action.subactions.length) {
+            d.setExecutionFinished(execution, state)
+          }
           continue
         }
         Ros2.debug("Executing subaction: " + subexecution.action.name)
@@ -60,6 +71,13 @@ Object {
           // If any subaction didn't succeed, the overall result is a partial failure.
           if (subexecution.state !== RobotActionExecution.ExecutionState.Succeeded) {
             state = RobotActionExecution.ExecutionState.PartialFailure
+          }
+          // Release the reference — the manager destroys finished executions, so keeping it
+          // in subexecutions would leave a dangling entry for cancel() to trip over.
+          let subIndex = execution.subexecutions.indexOf(subexecution)
+          if (subIndex !== -1) {
+            execution.subexecutions.splice(subIndex, 1)
+            execution.subexecutionsChanged()
           }
           count_done++
           execution.progress = [count_done / action.subactions.length, 1]
