@@ -11,6 +11,14 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <!-- Interfaces the QML controls subscribe to or call at runtime. -->
+  <exec_depend>hector_gamepad_manager_msgs</exec_depend>
+  <exec_depend>hector_launch_manager_msgs</exec_depend>
+  <exec_depend>hector_multi_robot_msgs</exec_depend>
+  <exec_depend>hector_rviz_plugins_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
   <exec_depend>qml-module-qtgraphicaleffects</exec_depend>
   <exec_depend>qml-module-qtmultimedia</exec_depend>
   <exec_depend>qml-module-qtquick2</exec_depend>

@@ -15,3 +15,13 @@ import Hector.Controls 1.0 // for controls
 import Hector.Icons 1.0 // for icons
 import Hector.Utils 1.0 // for utility classes and singletons
 ```
+
+
+## Attribution
+
+This package is MIT licensed (see [LICENSE](LICENSE)) with the exception of the gamepad artwork in
+`Hector/Controls/svgs`, which is licensed separately:
+
+> Button Icons and Controls by Zacksly (CC BY 3.0 Licensed | [zacksly.itch.io](https://zacksly.itch.io))
+
+Projects redistributing these assets must keep this attribution.
