@@ -110,18 +110,6 @@ Item {
     property var backRightFlipperJointMultiplierProperty: registerOffsetProperty("Back Right Multiplier", 1, function (value) { control.backRightFlipperJointMultiplier = value })
 
     onScaleChanged: robotCanvas.requestPaint()
-
-    function extractRoll(q) {
-      return Math.atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y))
-    }
-    
-    function extractPitch(q) {
-      return Math.asin(2 * (q.w * q.y - q.z * q.x))
-    }
-
-    function extractYaw(q) {
-      return Math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
-    }
   }
 
   Canvas {

@@ -15,7 +15,8 @@ Item {
   property alias type: robotView.type
   property alias flipperFrames: robotView.flipperFrames
   property alias baseFrame: robotView.baseFrame
-  //! If true, roll and pitch are negated so the levels still make sense when driving in reverse.
+  //! If true, the robot is shown as seen from its other side and the levels are negated to match,
+  //! so that the reversed driving direction points right.
   property bool reverse: false
   property real horizontalLevelMinimum: -60
   property real horizontalLevelMaximum: 60
@@ -31,14 +32,16 @@ Item {
       return imuSubscriber.message.orientation
     }
 
+    // Sign the levels have to be viewed with. Mirroring the robot view along x is equivalent to
+    // looking at the robot from its other side, which negates the roll and pitch it shows.
+    readonly property real viewSign: control.reverse ? -1 : 1
+
     function extractRoll(q) {
-      var roll = Math.atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y))
-      return control.reverse ? -roll : roll
+      return Math.atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y))
     }
 
     function extractPitch(q) {
-      var pitch = 2 * Math.atan2(q.y, q.w)
-      return control.reverse ? -pitch : pitch
+      return 2 * Math.atan2(q.y, q.w)
     }
 
     function extractYaw(q) {
@@ -57,6 +60,7 @@ Item {
     anchors.right: verticalLevel.left
     anchors.bottom: horizontalLevel.top
     pitch: d.extractPitch(d.orientation)
+    reverse: control.reverse
   }
 
   WaterLevel {
@@ -67,7 +71,7 @@ Item {
     height: Units.pt(12)
     minimum: control.horizontalLevelMinimum
     maximum: control.horizontalLevelMaximum
-    value: d.extractRoll(d.orientation) * 180 / Math.PI
+    value: d.viewSign * d.extractRoll(d.orientation) * 180 / Math.PI
   }
 
 
@@ -80,6 +84,6 @@ Item {
     orientation: WaterLevel.Vertical
     minimum: control.verticalLevelMinimum
     maximum: control.verticalLevelMaximum
-    value: d.extractPitch(d.orientation) * 180 / Math.PI
+    value: d.viewSign * d.extractPitch(d.orientation) * 180 / Math.PI
   }
 }

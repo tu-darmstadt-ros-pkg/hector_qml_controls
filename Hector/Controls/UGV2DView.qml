@@ -18,6 +18,9 @@ Item {
   property var flipperFrames: []
   //! Already-prefixed base frame the flipper orientation is measured against.
   property string baseFrame: ""
+  //! If true, the robot is drawn as seen from its other side, i.e. mirrored along x, so that the
+  //! reversed driving direction points right. Front and back flippers swap sides accordingly.
+  property bool reverse: false
 
   readonly property bool tracked: type === RobotType.Tracked
 
@@ -44,6 +47,7 @@ Item {
   onPitchChanged: robotCanvas.requestPaint()
   onTypeChanged: robotCanvas.requestPaint()
   onFlipperFramesChanged: robotCanvas.requestPaint()
+  onReverseChanged: robotCanvas.requestPaint()
 
   Timer {
     interval: 32; running: true; repeat: true
@@ -56,34 +60,43 @@ Item {
     property real scale: Math.min(control.width / 196, control.height / 196)
     onScaleChanged: robotCanvas.requestPaint()
 
-    function extractRoll(q) {
-      return Math.atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y))
-    }
-
-    function extractPitch(q) {
-      return Math.asin(2 * (q.w * q.y - q.z * q.x))
-    }
-
-    function extractYaw(q) {
-      return Math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
-    }
-
     // Full-range rotation angle (rad) about the Y (pitch) axis via swing-twist decomposition.
-    // The asin-based extractPitch is the aerospace-Euler pitch, which saturates at ±90° and folds
-    // back beyond it (flipper appears to reverse direction). A flipper is a revolute joint about Y,
-    // so 2*atan2(y, w) recovers its angle monotonically through a full turn.
     function twistAroundY(q) {
       return 2 * Math.atan2(q.y, q.w)
     }
 
     // Flipper angle (rad) from a tf transform, or 0 if no valid transform is available.
     function flipperAngle(tf) { return tf.valid ? 4.71 - twistAroundY(tf.rotation) : 0 }
+
+    readonly property string flipperPath: "m 1.184368,-44.456489 c 8.877153,0 10.657733,6.814691 11.784127,15.122534 L 17.208109,1.9357999 C 18.334504,10.243646 10.061521,17.058335 1.184368,17.058335 c -8.8771533,0 -17.150137,-6.814689 -16.023742,-15.1225351 l 4.239615,-31.2697549 c 1.1263935,-8.307843 2.9069737,-15.122534 11.784127,-15.122534 z"
   }
 
   Canvas {
     id: robotCanvas
     anchors.fill: parent
     contextType: "2d"
+
+    // Draws the two flippers of one side of the robot, mounted at the back (x=16) and front (x=112)
+    // of the chassis. Invalid transforms are skipped since their angle is unknown.
+    function drawFlippers(context, backTf, frontTf) {
+      context.save()
+      context.fillStyle = Qt.rgba(0.8, 0.8, 0.8, 1)
+      context.strokeStyle = Qt.rgba(0, 0, 0, 1)
+      context.lineWidth = 4
+      const mounts = [{tf: backTf, x: 16, direction: 1}, {tf: frontTf, x: 112, direction: -1}]
+      for (let i = 0; i < mounts.length; ++i) {
+        if (!mounts[i].tf.valid) continue
+        context.save()
+        context.translate(mounts[i].x, 45)
+        context.rotate(mounts[i].direction * d.flipperAngle(mounts[i].tf))
+        context.path = d.flipperPath
+        context.fill()
+        context.stroke()
+        context.restore()
+      }
+      context.restore()
+    }
+
     onPaint: {
       if (!context) return // Wait for context to be valid
       context.save()
@@ -91,6 +104,9 @@ Item {
       var scale = d.scale * (control.tracked ? 1 : 1.3) // Scale up wheeled as it's more compact
       // Center and scale to fill
       context.translate(control.width / 2, control.height / 2)
+      // Mirroring along x renders the robot as seen from its other side, which flips the drawn pitch
+      // and the flipper mount positions together, so the reversed driving direction points right.
+      if (control.reverse) context.scale(-1, 1)
       context.rotate(control.pitch)
 
       // Direction indicators at the chassis center, drawn before context.scale so they keep a fixed
@@ -110,32 +126,11 @@ Item {
       context.scale(scale, scale)
       context.translate(-61, -48)
 
-      // Draw left flippers (tracked only)
+      // Draw the flippers of the side facing away from the viewer first, so the chassis occludes them.
+      // Mirroring shows the robot from its left, which puts the left flippers in front instead.
       if (control.tracked) {
-        context.save()
-        context.fillStyle = Qt.rgba(0.8, 0.8, 0.8, 1)
-        context.strokeStyle = Qt.rgba(0, 0, 0, 1)
-        context.lineWidth = 4
-        if (tfBL.valid) {
-          context.save()
-          context.translate(16, 45)
-          context.rotate(d.flipperAngle(tfBL))
-          context.path = "m 1.184368,-44.456489 c 8.877153,0 10.657733,6.814691 11.784127,15.122534 L 17.208109,1.9357999 C 18.334504,10.243646 10.061521,17.058335 1.184368,17.058335 c -8.8771533,0 -17.150137,-6.814689 -16.023742,-15.1225351 l 4.239615,-31.2697549 c 1.1263935,-8.307843 2.9069737,-15.122534 11.784127,-15.122534 z"
-          context.fill()
-          context.stroke()
-          context.restore()
-        }
-
-        if (tfFL.valid) {
-          context.save()
-          context.translate(112, 45)
-          context.rotate(-d.flipperAngle(tfFL))
-          context.path = "m 1.184368,-44.456489 c 8.877153,0 10.657733,6.814691 11.784127,15.122534 L 17.208109,1.9357999 C 18.334504,10.243646 10.061521,17.058335 1.184368,17.058335 c -8.8771533,0 -17.150137,-6.814689 -16.023742,-15.1225351 l 4.239615,-31.2697549 c 1.1263935,-8.307843 2.9069737,-15.122534 11.784127,-15.122534 z"
-          context.fill()
-          context.stroke()
-          context.restore()
-        }
-        context.restore()
+        if (control.reverse) robotCanvas.drawFlippers(context, tfBR, tfFR)
+        else robotCanvas.drawFlippers(context, tfBL, tfFL)
       }
 
       // Draw robot body
@@ -154,31 +149,9 @@ Item {
         context.fill()
         context.stroke()
 
-        // Draw right flippers
-        context.save()
-        context.fillStyle = Qt.rgba(0.8, 0.8, 0.8, 1)
-        context.strokeStyle = Qt.rgba(0, 0, 0, 1)
-        context.lineWidth = 4
-        if (tfBR.valid) {
-          context.save()
-          context.translate(16, 45)
-          context.rotate(d.flipperAngle(tfBR))
-          context.path = "m 1.184368,-44.456489 c 8.877153,0 10.657733,6.814691 11.784127,15.122534 L 17.208109,1.9357999 C 18.334504,10.243646 10.061521,17.058335 1.184368,17.058335 c -8.8771533,0 -17.150137,-6.814689 -16.023742,-15.1225351 l 4.239615,-31.2697549 c 1.1263935,-8.307843 2.9069737,-15.122534 11.784127,-15.122534 z"
-          context.fill()
-          context.stroke()
-          context.restore()
-        }
-
-        if (tfFR.valid) {
-          context.save()
-          context.translate(112, 45)
-          context.rotate(-d.flipperAngle(tfFR))
-          context.path = "m 1.184368,-44.456489 c 8.877153,0 10.657733,6.814691 11.784127,15.122534 L 17.208109,1.9357999 C 18.334504,10.243646 10.061521,17.058335 1.184368,17.058335 c -8.8771533,0 -17.150137,-6.814689 -16.023742,-15.1225351 l 4.239615,-31.2697549 c 1.1263935,-8.307843 2.9069737,-15.122534 11.784127,-15.122534 z"
-          context.fill()
-          context.stroke()
-          context.restore()
-        }
-        context.restore()
+        // Draw the flippers of the side facing the viewer on top of the chassis.
+        if (control.reverse) robotCanvas.drawFlippers(context, tfBL, tfFL)
+        else robotCanvas.drawFlippers(context, tfBR, tfFR)
       } else {
         // Wheeled robot: draw wheels at the front and back instead of tracks/flippers.
         context.fillStyle = Qt.rgba(0.15, 0.15, 0.15, 1)
