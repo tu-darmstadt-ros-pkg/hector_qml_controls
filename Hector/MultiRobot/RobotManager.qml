@@ -38,6 +38,25 @@ Object {
     return cfg
   }
 
+  // Parses the announcement's visualizations into plain JS objects.
+  // Relative topics resolve against the announcement's ros_namespace.
+  function buildVisualizations(message) {
+    if (!message.visualizations) return []
+    return message.visualizations.toArray().map(function(viz) {
+      var topic = viz.topic.startsWith("/") ? viz.topic : message.ros_namespace + "/" + viz.topic
+      return ({
+        key: viz.kind + "|" + topic, // stable identity across re-announcements
+        name: viz.name,
+        topic: topic,
+        messageType: viz.message_type,
+        kind: viz.kind,
+        group: viz.group,
+        defaultVisibility: viz.default_visibility,
+        hints: buildConfig(viz)
+      })
+    })
+  }
+
   QtObject {
     id: d
   }
@@ -68,6 +87,7 @@ Object {
           "configuration": buildConfig(message),
           "isReady": true
         })
+        robot.updateVisualizations(buildVisualizations(message))
         // Reassign instead of push so the `robots` property emits its change
         // signal; bindings like the multi-robot switcher refresh on discovery.
         robots = robots.concat(robot)
@@ -80,6 +100,7 @@ Object {
         Ros2.info("Updated robot announcement: " + message.name + " (" + message.ros_namespace + ")")
         robot.type = message.type
         robot.configuration = buildConfig(message)
+        robot.updateVisualizations(buildVisualizations(message))
         robot.isReady = true
       }
     }

@@ -18,6 +18,12 @@ Object {
     Manipulation,
     Autonomous
   }
+  //! Values intentionally equal Visualization.msg's DEFAULT_VISIBILITY_* constants.
+  enum VisualizationMode {
+    Off,
+    WhenActive,
+    On
+  }
   property string robot_id: ""
   property string name: ""
   property string namespace: ""
@@ -39,6 +45,33 @@ Object {
   property string type: ""
   //! Parsed { key: value } map from the announcement's keys[]/values[] arrays.
   property var configuration: ({})
+  //! Parsed visualizations from the announcement:
+  //! [{ key, name, topic (absolute), messageType, kind, group, defaultVisibility, hints: {..} }]
+  property var visualizations: []
+  //! Session-only visibility mode per visualization key (Robot.VisualizationMode values).
+  //! Initialized from the announcement's defaultVisibility.
+  property var visualizationModes: ({})
+
+  function setVisualizationMode(key, mode) {
+    // Copy instead of mutating so the property change signal fires.
+    // Note: Object.assign is unavailable here, the Hector.Utils Object type shadows the JS global.
+    let modes = {}
+    for (let k in visualizationModes) modes[k] = visualizationModes[k]
+    modes[key] = mode
+    visualizationModes = modes
+  }
+
+  //! Replaces the visualization list, keeping the session mode of entries that survive.
+  function updateVisualizations(visualizations) {
+    let modes = {}
+    for (let i = 0; i < visualizations.length; ++i) {
+      let viz = visualizations[i]
+      modes[viz.key] = (viz.key in root.visualizationModes)
+          ? root.visualizationModes[viz.key] : viz.defaultVisibility
+    }
+    root.visualizations = visualizations
+    root.visualizationModes = modes
+  }
 
   //! Robot namespace converted to a tf frame prefix ("/athena" -> "athena/", "" -> "").
   //! Frames forwarded to the global tf tree are prefixed with this.
