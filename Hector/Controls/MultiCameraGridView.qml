@@ -112,7 +112,7 @@ Item {
       d.cameraList.clear()
       for (let i = 0; i < root.configuration.cameras.length; ++i) {
         const entry = root.configuration.cameras[i]
-        let data = {id: entry.id, name: entry.name, configuration: entry, orientation: parseInt(entry.orientation) || 0, source: null}
+        let data = {id: entry.id, name: entry.name, configuration: entry, orientation: parseInt(entry.orientation) || 0}
         d.cameraList.append(data)
       }
       d.cameraList = d.cameraList
