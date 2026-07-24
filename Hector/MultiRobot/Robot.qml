@@ -36,8 +36,8 @@ Object {
     name: "driver_launch_manager"
   }
   property var status: ({
-    battery_level: -1, // -1 means unknown, otherwise 0-1 range
-    battery_voltage: -1, // -1 means unknown, otherwise in volts
+    battery_level: -1, // -1 means unknown, otherwise percent from 0 to 100
+    batteries: [], // array of battery info, mirrors sensor_msgs/BatteryState
     status_code: -1, // -1 means unknown, otherwise 0 is okay, !=0 is error
     status_message: ""
   })
@@ -151,9 +151,28 @@ Object {
     messageType: "hector_multi_robot_msgs/msg/RobotStatus"
     onNewMessage: function(message) {
       if (message.robot_id != root.robot_id) return // Wrong robot
+      let batteries = message.batteries ? message.batteries.toArray() : []
       root.status = ({
         battery_level: message.battery_level,
-        battery_voltage: message.battery_voltage,
+        batteries: batteries.map(function(b) {
+          return ({
+            voltage: b.voltage,
+            temperature: b.temperature,
+            current: b.current,
+            charge: b.charge,
+            capacity: b.capacity,
+            design_capacity: b.design_capacity,
+            percentage: b.percentage,
+            power_supply_status: b.power_supply_status,
+            power_supply_health: b.power_supply_health,
+            power_supply_technology: b.power_supply_technology,
+            present: b.present,
+            cell_voltage: b.cell_voltage ? b.cell_voltage.toArray() : [],
+            cell_temperature: b.cell_temperature ? b.cell_temperature.toArray() : [],
+            location: b.location,
+            serial_number: b.serial_number
+          })
+        }),
         status_code: message.status_code,
         status_message: message.status_message || ""
       })
