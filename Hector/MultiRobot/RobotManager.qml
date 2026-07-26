@@ -57,6 +57,31 @@ Object {
     })
   }
 
+  // Parses the announcement's sensors into plain JS objects.
+  // Relative topics (the value topic and the warn_topic hint) resolve against the
+  // announcement's ros_namespace.
+  function buildSensors(message) {
+    if (!message.sensors) return []
+    return message.sensors.toArray().map(function(sensor) {
+      var topic = sensor.topic.startsWith("/") ? sensor.topic : message.ros_namespace + "/" + sensor.topic
+      var hints = buildConfig(sensor)
+      var warnTopic = hints.warn_topic || ""
+      if (warnTopic && !warnTopic.startsWith("/")) warnTopic = message.ros_namespace + "/" + warnTopic
+      return ({
+        id: sensor.id,
+        name: sensor.name || sensor.id,
+        topic: topic,
+        messageType: sensor.message_type,
+        field: sensor.field,
+        unit: sensor.unit,
+        icon: sensor.icon,
+        prefix: sensor.prefix || "",
+        warnTopic: warnTopic,
+        hints: hints
+      })
+    })
+  }
+
   QtObject {
     id: d
   }
@@ -85,6 +110,7 @@ Object {
           "namespace": message.ros_namespace,
           "type": message.type,
           "configuration": buildConfig(message),
+          "sensors": buildSensors(message),
           "isReady": true
         })
         robot.updateVisualizations(buildVisualizations(message))
@@ -100,6 +126,7 @@ Object {
         Ros2.info("Updated robot announcement: " + message.name + " (" + message.ros_namespace + ")")
         robot.type = message.type
         robot.configuration = buildConfig(message)
+        robot.sensors = buildSensors(message)
         robot.updateVisualizations(buildVisualizations(message))
         robot.isReady = true
       }

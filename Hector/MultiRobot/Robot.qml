@@ -73,6 +73,11 @@ Object {
     root.visualizationModes = modes
   }
 
+  //! Parsed sensors from the announcement:
+  //! [{ id, name, topic (absolute), messageType, field, unit, icon, prefix,
+  //!    warnTopic (absolute or ""), hints: {..} }]
+  property var sensors: []
+
   //! Robot namespace converted to a tf frame prefix ("/athena" -> "athena/", "" -> "").
   //! Frames forwarded to the global tf tree are prefixed with this.
   readonly property string tfPrefix: namespace.replace(/^\/+/, "").replace(/\/*$/, namespace ? "/" : "")
