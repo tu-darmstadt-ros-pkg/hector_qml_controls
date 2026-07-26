@@ -41,7 +41,10 @@ Item {
     }
 
     function extractPitch(q) {
-      return 2 * Math.atan2(q.y, q.w)
+      // Standard ZYX pitch. The 2*atan2(y, w) twist-about-y shortcut only holds for a pure
+      // pitch rotation; with yaw present it folds the yaw into a spurious pitch.
+      var sinp = 2 * (q.w * q.y - q.z * q.x)
+      return Math.asin(Math.max(-1, Math.min(1, sinp)))
     }
 
     function extractYaw(q) {
