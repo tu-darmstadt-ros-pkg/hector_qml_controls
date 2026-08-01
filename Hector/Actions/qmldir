@@ -2,3 +2,4 @@ module Hector.Actions
 RobotAction 1.0 RobotAction.qml
 RobotActionExecution 1.0 execution/RobotActionExecution.qml
 RobotActionManager 1.0 RobotActionManager.qml
+ExecutionStates 1.0 execution/executionstates.js

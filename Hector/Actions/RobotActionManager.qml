@@ -3,6 +3,7 @@ import QtQuick.Controls 2.2
 import Ros2 1.0
 import Hector.Utils 1.0
 import "execution"
+import "execution/executionstates.js" as ExecutionStates
 
 Object {
   id: root
@@ -12,6 +13,12 @@ Object {
   signal executionStarted(string uuid, RobotActionExecution execution)
 
   readonly property var activeExecutions: d.activeExecutions.filter(x => !x.anonymous)
+
+  //! Most relevant result state of the current batch of executions, i.e. of all executions that ran
+  //! since the last time no execution was running. Since finished executions are removed one by one,
+  //! the executions that are still listed do not tell what happened to the batch as a whole.
+  //! Kept until the next batch starts so it can still be displayed, e.g. while a status fades out.
+  readonly property int batchResultState: d.batchResultState
 
   function getAction(uuid) {
     if (!uuid) return null
@@ -383,6 +390,9 @@ Object {
     id: d
     property var actions: ({})
     property var activeExecutions: []
+    //! Number of non-anonymous executions of the current batch that are still running.
+    property int runningCount: 0
+    property int batchResultState: RobotActionExecution.ExecutionState.Succeeded
     property ActionExecutor actionExecutor: ActionExecutor {}
     property CompositeExecutor compositeExecutor: CompositeExecutor { actionManager: root }
     property JavaScriptExecutor javascriptExecutor: JavaScriptExecutor {}
@@ -399,7 +409,32 @@ Object {
       })
       execution.executionFinished.connect(delay.start)
       if (!execution.active) delay.start()
+      d.trackBatchExecution(execution)
       if (!execution.anonymous) d.activeExecutionsChanged()
+    }
+
+    //! Updates batchResultState with the result of the given execution once it finished.
+    //! Anonymous executions are part of the execution that started them and not tracked separately.
+    function trackBatchExecution(execution) {
+      if (execution.anonymous) return
+      if (d.runningCount === 0) d.batchResultState = RobotActionExecution.ExecutionState.Succeeded
+      d.runningCount++
+      let finishHandled = false
+      function onExecutionFinished() {
+        if (finishHandled) return
+        finishHandled = true
+        d.runningCount--
+        // The state is set before the execution becomes inactive, so it is final at this point.
+        // An execution that ended without a terminal state would be indistinguishable from one that
+        // never ran, or would keep the batch on a running state, so report it as a failure.
+        let state = execution.state
+        if (!ExecutionStates.isTerminal(state)) state = RobotActionExecution.ExecutionState.Failed
+        if (ExecutionStates.rank(state) > ExecutionStates.rank(d.batchResultState)) {
+          d.batchResultState = state
+        }
+      }
+      execution.executionFinished.connect(onExecutionFinished)
+      if (!execution.active) onExecutionFinished()
     }
 
     function removeExecution(execution) {

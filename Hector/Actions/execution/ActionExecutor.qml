@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import Ros2 1.0
 import Hector.Utils 1.0
+import "executionstates.js" as ExecutionStates
 
 Object {
 
@@ -92,6 +93,12 @@ Object {
   }
 
 
+  //! Grace period for the result response after the goal reached a terminal status.
+  Component {
+    id: resultTimeoutComponent
+    Timer { interval: 5000 }
+  }
+
   QtObject {
     id: d
     property var actionClients: ({})
@@ -110,41 +117,80 @@ Object {
         return RobotActionExecution.ExecutionState.Running
       else if (status === ActionGoalStatus.Succeeded)
         return RobotActionExecution.ExecutionState.Succeeded
-      else if (status === ActionGoalStatus.Timeout)
-        return RobotActionExecution.ExecutionState.Timeout
       return RobotActionExecution.ExecutionState.Unknown
     }
 
     function sendActionGoal(client, action, execution) {
       d.removeScheduledAction(action) // No-op if not scheduled
+      let resultTimeout = null
+
+      function finish(state) {
+        if (resultTimeout !== null) {
+          resultTimeout.destroy()
+          resultTimeout = null
+        }
+        // Already finished, e.g., because it was force canceled, or already destroyed
+        if (!execution || !execution.active) return
+        // An execution that ends without a terminal state, e.g. with an unknown result code, would
+        // be indistinguishable from one that never ran, so report it as a failure.
+        if (!ExecutionStates.isTerminal(state)) state = RobotActionExecution.ExecutionState.Failed
+        execution.state = state
+        if (state === RobotActionExecution.ExecutionState.Succeeded) {
+          execution.progress = 1
+        }
+        execution.active = false
+        execution.executionFinished()
+      }
+
       execution.actionGoal = client.sendGoalAsync(action.getParams(), {
         onGoalResponse(goal) {
           if (goal == null) {
-            execution.state = RobotActionExecution.ExecutionState.Failed
-            execution.active = false
-            execution.executionFinished()
+            finish(RobotActionExecution.ExecutionState.Failed)
             return
           }
-          execution.state = Qt.binding(function () {
-            return d.statusToExecutionState(goal.status)
-          })
+          function onGoalStatusChanged() {
+            if (!execution || !execution.active) return
+            let state = d.statusToExecutionState(goal.status)
+            if (!ExecutionStates.isTerminal(state)) {
+              if (state === RobotActionExecution.ExecutionState.Unknown) return
+              // Once canceling, don't fall back to running until the goal reaches a terminal state
+              if (execution.state === RobotActionExecution.ExecutionState.Canceling) return
+              execution.state = state
+              return
+            }
+            // The goal status and the result response are independent, so the result may still be
+            // outstanding. Wait for it since it carries the result message but do not stay active
+            // forever if it never arrives.
+            if (resultTimeout !== null) return
+            resultTimeout = resultTimeoutComponent.createObject(null)
+            resultTimeout.triggered.connect(function () {
+              Ros2.warn("No result received for action '" + action.name + "' after the goal reached a " +
+                        "terminal state. Finishing execution based on the goal status.")
+              finish(state)
+            })
+            resultTimeout.start()
+          }
+          goal.statusChanged.connect(onGoalStatusChanged)
+          onGoalStatusChanged() // In case the goal already reached a terminal state
         },
-        onFeedback(goal, feedback) { execution.feedback(feedback) },
+        onFeedback(goal, feedback) {
+          // Feedback may still arrive after the execution was destroyed
+          if (!execution) return
+          execution.feedback(feedback)
+        },
         onResult(result) {
             try { execution.result(result.result) } catch (e) {}
             Ros2.debug("Action result received: " + result.code)
-            let state = d.statusToExecutionState(result.code)
-
-            // Mark execution done if it wasn't canceled in the mean time
-            if (!execution.active) return
-            execution.state = state
-            if (state === RobotActionExecution.ExecutionState.Succeeded) {
-              execution.progress = 1
-            }
-            execution.active = false
-            execution.executionFinished()
+            finish(d.statusToExecutionState(result.code))
         }
       })
+      if (!execution.actionGoal) {
+        // Without a goal handle the goal was never sent, e.g. because the params did not match the
+        // action type, and none of the callbacks above will ever be invoked.
+        Ros2.error("Could not send goal for action '" + action.name + "' on topic '" + action.topic + "'!")
+        finish(RobotActionExecution.ExecutionState.Failed)
+        return
+      }
       execution.state = RobotActionExecution.ExecutionState.Running
     }
 

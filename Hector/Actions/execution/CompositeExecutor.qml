@@ -44,9 +44,10 @@ Object {
 
     function executeParallel(action, execution) {
       let count_done = 0
-      let state = RobotActionExecution.ExecutionState.Succeeded
+      let count_failed = 0
+      let count_canceled = 0
       if (action.subactions.length === 0) {
-        d.setExecutionFinished(execution, state)
+        d.setExecutionFinished(execution, RobotActionExecution.ExecutionState.Succeeded)
         return
       }
       for(let i = 0; i < action.subactions.length; i++) {
@@ -55,11 +56,11 @@ Object {
         let subexecution = actionManager.execute(action.subactions[i].action, true)
         if (!subexecution) {
           // Subaction could not be started — count it as done but report partial failure
-          state = RobotActionExecution.ExecutionState.PartialFailure
+          count_failed++
           count_done++
           execution.progress = [count_done / action.subactions.length, 1]
           if (count_done >= action.subactions.length) {
-            d.setExecutionFinished(execution, state)
+            d.setExecutionFinished(execution, d.parallelResultState(execution, count_failed, count_canceled))
           }
           continue
         }
@@ -68,9 +69,10 @@ Object {
         function onSubexecutionFinished() {
           if (finishHandled) return
           finishHandled = true
-          // If any subaction didn't succeed, the overall result is a partial failure.
-          if (subexecution.state !== RobotActionExecution.ExecutionState.Succeeded) {
-            state = RobotActionExecution.ExecutionState.PartialFailure
+          if (subexecution.state === RobotActionExecution.ExecutionState.Canceled) {
+            count_canceled++
+          } else if (subexecution.state !== RobotActionExecution.ExecutionState.Succeeded) {
+            count_failed++
           }
           // Release the reference — the manager destroys finished executions, so keeping it
           // in subexecutions would leave a dangling entry for cancel() to trip over.
@@ -82,7 +84,7 @@ Object {
           count_done++
           execution.progress = [count_done / action.subactions.length, 1]
           if (count_done >= action.subactions.length) {
-            d.setExecutionFinished(execution, state)
+            d.setExecutionFinished(execution, d.parallelResultState(execution, count_failed, count_canceled))
           }
         }
 
@@ -93,6 +95,18 @@ Object {
           onSubexecutionFinished() 
         }
       }
+    }
+
+    //! Result state of a parallel composite whose subactions have all finished.
+    //! Canceling a composite cancels its subactions, so a composite whose subactions were only
+    //! canceled is a cancelation and not a partial failure. Subactions canceled without the
+    //! composite being canceled, e.g. by the action server, remain a partial failure.
+    function parallelResultState(execution, failed, canceled) {
+      if (failed > 0) return RobotActionExecution.ExecutionState.PartialFailure
+      if (canceled === 0) return RobotActionExecution.ExecutionState.Succeeded
+      return execution.state === RobotActionExecution.ExecutionState.Canceling
+             ? RobotActionExecution.ExecutionState.Canceled
+             : RobotActionExecution.ExecutionState.PartialFailure
     }
 
     //! @param state Tracks the current index and how many actions have failed
@@ -150,11 +164,11 @@ Object {
 
     function setExecutionFinished(execution, state) {
       if (!execution.active) return
-      execution.active = false
       execution.state = state
       if (state === RobotActionExecution.ExecutionState.Succeeded) {
         execution.progress = 1
       }
+      execution.active = false
       execution.executionFinished()
     }
   }
