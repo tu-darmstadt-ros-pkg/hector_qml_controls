@@ -15,7 +15,8 @@ Object {
         let topic = rviz.nodeName + "/hector_view_controller";
         return rviz.namespace && rviz.namespace.length > 1 ? rviz.namespace + "/" + topic : topic;
     }
-    readonly property string trackedFrame: trackedFrameSubscriber.message && trackedFrameSubscriber.message.frame || ""
+    // Empty means no frame is tracked.
+    readonly property string trackedFrame: trackedFrameSubscriber.message && trackedFrameSubscriber.message.data || ""
     readonly property string viewMode: viewModeSubscriber.message ? (viewModeSubscriber.message.mode == 1 ? "2D" : "3D") : "3D"
 
     function setActiveRobot(robot) {
@@ -98,13 +99,19 @@ Object {
         });
     }
 
+    // Both topics are latched state that is only published on change, so without transient_local
+    // the state stays unknown until the operator changes it in rviz.
     Subscription {
         id: viewModeSubscriber
         topic: root.viewControllerNamespace + "/view_mode"
+        throttleRate: 0
+        qos: Ros2.QoS().transient_local().reliable().keep_last(1)
     }
     Subscription {
         id: trackedFrameSubscriber
         topic: root.viewControllerNamespace + "/tracked_frame"
+        throttleRate: 0
+        qos: Ros2.QoS().transient_local().reliable().keep_last(1)
     }
 
     QtObject {
