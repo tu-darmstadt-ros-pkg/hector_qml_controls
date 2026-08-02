@@ -42,7 +42,7 @@ Object {
         });
     }
 
-    function moveCamera(x, y, frame) {
+    function moveCamera(x, y, z, frame) {
         if (!d.moveEyeAndFocusClient.ready) {
             Ros2.warn("View controller not connected. Topic is: " + root.viewControllerNamespace + "/move_eye_and_focus");
             return;
@@ -54,7 +54,7 @@ Object {
             eye: {
                 x: x,
                 y: y,
-                z: 3
+                z: z
             }
         }, function (result) {
             if (result)
