@@ -42,11 +42,16 @@ Object {
       entry._registerCount++
       return true
     }
-    if (entry && entry._registerCount > 0) {
-      // Active references exist — update in-place to preserve shared pointers
-      Ros2.warn("Registered a different action with the same uuid '" + action.uuid + "'. " +
-                "Use updateAction() instead. Updating in-place to preserve references.")
-      _freeResources(entry.action)
+    if (entry) {
+      // A different action with a known uuid. The existing object is updated in-place and never
+      // replaced because references to it are held elsewhere, e.g. by a still running execution
+      // whose action property would become null if the object was destroyed.
+      if (entry._registerCount > 0) {
+        Ros2.warn("Registered a different action with the same uuid '" + action.uuid + "'. " +
+                  "Use updateAction() instead. Updating in-place to preserve references.")
+        // Resources of an unregistered action were already freed by unregisterAction
+        _freeResources(entry.action)
+      }
       _applyProperties(entry.action, action)
       entry._registerCount++
       if (!_setupAction(entry.action)) {
@@ -55,14 +60,10 @@ Object {
       actionUpdated(entry.action)
       return true
     }
-    // No active references (or no entry) — safe to create new
     let newAction = _createAction(action)
     if (!_setupAction(newAction)) {
       newAction.destroy()
       return false
-    }
-    if (entry) {
-      entry.action.destroy()
     }
     d.actions[action.uuid] = {_registerCount: 1, action: newAction}
     actionRegistered(newAction)
