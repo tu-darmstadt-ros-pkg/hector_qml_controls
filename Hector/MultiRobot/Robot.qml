@@ -97,10 +97,11 @@ Object {
   //! hector_gamepad_manager_msgs/msg/GamepadMapping as plain JS objects:
   //! { default_config: string,
   //!   configs: [{ name, description,
-  //!               buttons: [{ index, plugin, actions: [{ event, function, description }] }],
-  //!               axes: [{ index, plugin, function, description }] }],
-  //!   config_switches: [{ index, config, description }] }
-  //! Button indices 0-10 are physical, 11-24 virtual (an axis pushed past its deadzone).
+  //!               buttons: [{ name, plugin, actions: [{ event, function, description }] }],
+  //!               axes: [{ name, plugin, function, description }] }],
+  //!   config_switches: [{ name, config, description }] }
+  //! Controls are identified by their canonical name ("a", "left_bumper", "left_stick_up",
+  //! "left_stick_x"), not by a wire index.
   property var joyMapping: null
 
   //! True while the robot's teleop drive direction is reversed. False if unknown.
@@ -119,7 +120,7 @@ Object {
             description: config.description,
             buttons: config.buttons.toArray().map(function(button) {
               return ({
-                index: button.index,
+                name: button.name,
                 plugin: button.plugin,
                 actions: button.actions.toArray().map(function(action) {
                   return ({
@@ -132,7 +133,7 @@ Object {
             }),
             axes: config.axes.toArray().map(function(axis) {
               return ({
-                index: axis.index,
+                name: axis.name,
                 plugin: axis.plugin,
                 function: axis.function,
                 description: axis.description
@@ -142,7 +143,7 @@ Object {
         }),
         config_switches: message.config_switches.toArray().map(function(config_switch) {
           return ({
-            index: config_switch.index,
+            name: config_switch.name,
             config: config_switch.config,
             description: config_switch.description
           })
