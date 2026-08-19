@@ -13,8 +13,8 @@ Item {
   id: control
 
   //! Map of control key -> array of rows {badge: string, text: string}.
-  //! Keys: "a","b","x","y","lb","rb","lt","rt","back","start","guide","lstick","lstick_click",
-  //! "rstick","rstick_click","dpad","dpad_up","dpad_down","dpad_left","dpad_right".
+  //! Keys: "a","b","x","y","lb","rb","lt","rt","back","start","guide","share","lstick",
+  //! "lstick_click","rstick","rstick_click","dpad","dpad_up","dpad_down","dpad_left","dpad_right".
   //! Controls absent from the map are left out of their group; a group without any labelled control
   //! is not drawn at all.
   property var controlLabels: ({})
@@ -53,7 +53,7 @@ Item {
     readonly property var groups: [
       { band: "topLeft", side: "right", turnX: 280, keys: ["lt", "lb"],
         anchor: { x: 400, y: 42 } },
-      { band: "topCenter", side: "bottom", keys: ["guide", "back", "start"],
+      { band: "topCenter", side: "bottom", keys: ["guide", "back", "start", "share"],
         anchor: { x: 860, y: 280.0 } },
       { band: "topRight", side: "left", turnX: 1450, keys: ["rt", "rb"],
         anchor: { x: 1320, y: 42 } },

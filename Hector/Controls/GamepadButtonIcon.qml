@@ -36,7 +36,7 @@ Item {
     "lstick_click": "Left Stick Click.svg", "rstick_click": "Right Stick Click.svg",
     "dpad": "D-Pad.svg", "dpad_up": "D-Pad Up.svg", "dpad_down": "D-Pad Down.svg",
     "dpad_left": "D-Pad Left.svg", "dpad_right": "D-Pad Right.svg",
-    "back": "View.svg", "start": "Menu.svg", "guide": "Home.svg"
+    "back": "View.svg", "start": "Menu.svg", "guide": "Home.svg", "share": "Share.svg"
   })
 
   readonly property color tint: reserved ? accentColor
