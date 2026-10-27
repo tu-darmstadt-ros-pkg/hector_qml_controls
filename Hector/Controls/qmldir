@@ -10,6 +10,7 @@ GamepadButtonIcon 1.0 GamepadButtonIcon.qml
 GamepadView 1.0 GamepadView.qml
 Icon 1.0 Icon.qml
 MultiCameraGridView 1.0 MultiCameraGridView.qml
+OverlayIconButton 1.0 OverlayIconButton.qml
 Pill 1.0 Pill.qml
 Progress 1.0 Progress.qml
 ProgressWithText 1.0 ProgressWithText.qml

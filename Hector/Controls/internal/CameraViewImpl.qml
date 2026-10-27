@@ -6,6 +6,7 @@ import QtMultimedia 5.4
 import Ros2 1.0
 import Hector.Icons 1.0
 import Hector.Utils 1.0
+import ".."
 
 Item {
   id: control
@@ -217,24 +218,10 @@ Item {
       anchors.top: parent.top
       anchors.margins: Units.pt(4)
 
-      RoundButton {
-        padding: 0
+      OverlayIconButton {
+        implicitWidth: nameLabel.implicitHeight
         visible: control.allowPause && !!control.stream
-
-        Text {
-          anchors.centerIn: parent
-          font.family: HectorIcons.fontFamily
-          text: d.isPaused ? HectorIcons.play : HectorIcons.pause
-          color: "#ffffff"
-        }
-
-        background: Rectangle {
-          implicitHeight: nameLabel.implicitHeight
-          implicitWidth: nameLabel.implicitHeight
-          radius: width / 2
-          color: "#444444"
-          opacity: parent.down ? 1 : parent.hovered ? 0.8 : 0.6
-        }
+        text: d.isPaused ? HectorIcons.play : HectorIcons.pause
 
         onClicked: {
           if (!control.stream) return
@@ -243,47 +230,17 @@ Item {
         }
       }
 
-      RoundButton {
-        padding: 0
+      OverlayIconButton {
+        implicitWidth: nameLabel.implicitHeight
         visible: control.allowPopout
-
-        Text {
-          anchors.centerIn: parent
-          font.family: HectorIcons.fontFamily
-          text: HectorIcons.popout
-          color: "#ffffff"
-        }
-
-        background: Rectangle {
-          implicitHeight: nameLabel.implicitHeight
-          implicitWidth: nameLabel.implicitHeight
-          radius: width / 2
-          color: "#444444"
-          opacity: parent.down ? 1 : parent.hovered ? 0.8 : 0.6
-        }
-
+        text: HectorIcons.popout
         onClicked: control.popout()
       }
 
-      RoundButton {
-        padding: 0
+      OverlayIconButton {
+        implicitWidth: nameLabel.implicitHeight
         visible: control.fullscreen || control.allowFullscreen
-
-        Text {
-          anchors.centerIn: parent
-          font.family: HectorIcons.fontFamily
-          text: control.fullscreen ? HectorIcons.exitFullscreen : HectorIcons.fullscreen
-          color: "#ffffff"
-        }
-
-        background: Rectangle {
-          implicitHeight: nameLabel.implicitHeight
-          implicitWidth: nameLabel.implicitHeight
-          radius: width / 2
-          color: "#444444"
-          opacity: parent.down ? 1 : parent.hovered ? 0.8 : 0.6
-        }
-
+        text: control.fullscreen ? HectorIcons.exitFullscreen : HectorIcons.fullscreen
         onClicked: control.fullscreen = !control.fullscreen
       }
     }
