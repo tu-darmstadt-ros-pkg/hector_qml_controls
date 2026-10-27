@@ -42,3 +42,17 @@ function rank(state) {
   }
   return 0
 }
+
+//! The most relevant state of a set of executions, Succeeded for an empty set.
+//! States of still active executions take precedence, so a summary never reports a result while
+//! executions are still running.
+function summaryState(executions) {
+  let state = ExecutionState.Succeeded
+  for (let execution of executions) {
+    let executionState = execution.state
+    // Still running but in a state that doesn't indicate that, e.g. Unknown
+    if (execution.active && !isPending(executionState)) executionState = ExecutionState.Running
+    if (rank(executionState) > rank(state)) state = executionState
+  }
+  return state
+}
