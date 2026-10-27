@@ -63,6 +63,34 @@ Object {
         });
     }
 
+    // Moves eye and focus to the given points in frame (fixed frame if empty) and stops tracking.
+    function moveCameraTo(eye, focus, frame) {
+        if (!d.moveEyeAndFocusClient.ready) {
+            Ros2.warn("View controller not connected. Topic is: " + root.viewControllerNamespace + "/move_eye_and_focus");
+            return;
+        }
+        d.moveEyeAndFocusClient.sendRequestAsync({
+            header: {
+                frame_id: frame || ""
+            },
+            eye: {
+                x: eye.x,
+                y: eye.y,
+                z: eye.z
+            },
+            focus: {
+                x: focus.x,
+                y: focus.y,
+                z: focus.z
+            },
+            stop_tracking: true
+        }, function (result) {
+            if (result)
+                return;
+            Ros2.warn("Failed to move camera! Perhaps you are not using the HectorViewController ViewController.");
+        });
+    }
+
     function moveCamera2D(x, y, frame) {
         if (!d.moveEyeClient.ready) {
             Ros2.warn("View controller not connected. Topic is: " + root.viewControllerNamespace + "/move_eye");
