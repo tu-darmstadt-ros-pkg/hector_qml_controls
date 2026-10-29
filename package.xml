@@ -12,6 +12,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <!-- Interfaces the QML controls subscribe to or call at runtime. -->
+  <exec_depend>e_stop_manager_msgs</exec_depend>
   <exec_depend>hector_gamepad_manager_msgs</exec_depend>
   <exec_depend>hector_launch_manager_msgs</exec_depend>
   <exec_depend>hector_multi_robot_msgs</exec_depend>

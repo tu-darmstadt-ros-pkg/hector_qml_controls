@@ -84,7 +84,14 @@ Object {
   //! The robot's base frame, already prefixed.
   readonly property string baseFrame: tfPrefix + "base_link"
 
-  property var operationMode: Robot.OperationMode.Unknown
+  //! Safe while any e-stop is active, otherwise derived from the active gamepad profile.
+  readonly property int operationMode: {
+    if (d.anyEStopActive) return Robot.OperationMode.Safe
+    // TODO: Remove hard code and instead publish this in status.
+    if (joyProfile.includes("driv")) return Robot.OperationMode.Teleoperation
+    if (joyProfile.includes("manip")) return Robot.OperationMode.Manipulation
+    return Robot.OperationMode.Unknown
+  }
   readonly property var actionManager: RobotActionManager {
   }
   property bool isReady: false
@@ -110,6 +117,7 @@ Object {
   QtObject {
     id: d
     property var currentAction: null
+    property bool anyEStopActive: false
 
     function parseJoyMapping(message) {
       return ({
@@ -183,6 +191,13 @@ Object {
         status_message: message.status_message || ""
       })
     }
+  }
+
+  Subscription {
+    topic: root.namespace + "/e_stop_manager/e_stop_list"
+    messageType: "e_stop_manager_msgs/msg/EStopList"
+    qos: Ros2.QoS().transient_local().reliable().keep_last(1)
+    onNewMessage: function(message) { d.anyEStopActive = message.values.toArray().indexOf(true) !== -1 }
   }
 
   Subscription {
