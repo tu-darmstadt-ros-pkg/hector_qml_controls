@@ -2,7 +2,7 @@ import QtQuick 2.3
 import Ros2 1.0
 import Hector.Utils 1.0
 
-Object {
+NonVisualItem {
   property var action: null
   enum ExecutionState {
     Unknown,

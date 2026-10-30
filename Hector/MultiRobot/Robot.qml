@@ -3,7 +3,7 @@ import Ros2 1.0
 import Hector.Actions 1.0
 import Hector.Utils 1.0
 
-Object {
+NonVisualItem {
   id: root
   enum Type {
     Wheeled,
@@ -54,9 +54,7 @@ Object {
 
   function setVisualizationMode(key, mode) {
     // Copy instead of mutating so the property change signal fires.
-    // Note: Object.assign is unavailable here, the Hector.Utils Object type shadows the JS global.
-    let modes = {}
-    for (let k in visualizationModes) modes[k] = visualizationModes[k]
+    let modes = Object.assign({}, visualizationModes)
     modes[key] = mode
     visualizationModes = modes
   }

@@ -1,5 +1,5 @@
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls.Basic 2.1
 
 MouseArea {
   id: root
@@ -53,7 +53,7 @@ MouseArea {
     }
   }
 
-  onPressed: {
+  onPressed: function(mouse) {
     if (!root.enabled) return
     active = true
     d.startRect.x = target.x
@@ -64,7 +64,7 @@ MouseArea {
   }
   onReleased: active = false
   onCanceled: active = false
-  onPositionChanged: {
+  onPositionChanged: function(mouse) {
     if (!active) return
     var pos = mapToItem(target.parent, mouse.x, mouse.y)
     if (d.hasBorderFlag(ResizeHandle.Border.Left) || d.hasBorderFlag(ResizeHandle.Border.Right)) {

@@ -1,5 +1,5 @@
 import QtQuick 2.0
-import QtQuick.Controls 2.1
+import QtQuick.Controls.Basic 2.1
 import Ros2 1.0
 import Hector.MultiRobot 1.0
 
@@ -50,7 +50,7 @@ Item {
     id: jointStateSubscriber
     topic: RobotManager.activeRobot ? RobotManager.activeRobot.namespace + "/joint_states" : ""
     enabled: control.frontLeftFlipperJoint || control.frontRightFlipperJoint || control.backLeftFlipperJoint || control.backRightFlipperJoint
-    onNewMessage: {
+    onNewMessage: function(message) {
       if (!message.name) return
       var names = message.name.toArray()
       var index = names.indexOf(control.frontLeftFlipperJoint)

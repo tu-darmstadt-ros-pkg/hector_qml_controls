@@ -208,16 +208,14 @@ Item {
             ScrollBar.vertical: ScrollBar {}
 
             delegate: ItemDelegate {
-                readonly property int itemIndex: model.index
                 width: ListView.view.width
                 text: modelData
                 highlighted: ListView.isCurrentItem
 
                 onClicked: {
-                    control.text = modelData;
-                    ListView.view.currentIndex = itemIndex;
-                    popup.close();
                     field.forceActiveFocus();
+                    popup.close();
+                    control.text = modelData;
                 }
             }
         }

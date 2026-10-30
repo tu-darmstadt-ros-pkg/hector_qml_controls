@@ -3,7 +3,7 @@ import Ros2 1.0
 import Hector.Actions 1.0
 import Hector.Utils 1.0
 
-Object {
+NonVisualItem {
   id: root
   enum Status {
     Unknown,
@@ -32,7 +32,8 @@ Object {
       }
       let launch_configs = response.launch_configs || []
       if (launch_configs.toArray) {
-        launch_configs = launch_configs.toArray()
+        // toArray() returns a Qt sequence, not a JS array, in Qt >= 6.7
+        launch_configs = Array.from(launch_configs.toArray())
       }
       if (!Array.isArray(launch_configs)) {
         Ros2.warn("Received non-array launch configs for server " + server_name + ": " + launch_configs)

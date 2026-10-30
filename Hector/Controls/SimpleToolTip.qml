@@ -1,5 +1,5 @@
 import QtQuick 2.3
-import QtQuick.Controls 2.2
+import QtQuick.Controls.Basic 2.2
 
 MouseArea {
   anchors.fill: parent

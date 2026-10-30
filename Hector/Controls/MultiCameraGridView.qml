@@ -1,7 +1,6 @@
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls.Basic 2.1
 import QtQuick.Layouts 1.1
-import QtMultimedia 5.4
 import Ros2 1.0
 import Hector.Utils 1.0
 
@@ -15,7 +14,8 @@ Item {
   property var configuration
   onConfigurationChanged: {
     if (!configuration) configuration = {}
-    if (!configuration.cameras || !Array.isArray(configuration.cameras)) configuration.cameras = []
+    // Array.from also accepts Qt sequences, which fail Array.isArray
+    configuration.cameras = Array.from(configuration.cameras || [])
     d.updateCameraList()
   }
 
@@ -115,7 +115,6 @@ Item {
         let data = {id: entry.id, name: entry.name, configuration: entry, orientation: parseInt(entry.orientation) || 0}
         d.cameraList.append(data)
       }
-      d.cameraList = d.cameraList
     }
   }
 
@@ -198,7 +197,7 @@ Item {
           anchors.fill: parent
           acceptedButtons: Qt.LeftButton | Qt.RightButton
           enabled: root.selectedCamera === null
-          onClicked: {
+          onClicked: function(mouse) {
             if (mouse.button === Qt.RightButton) {
               // Qt 5.10 introduces a method popup that handles this in one call
               contextMenu.x = mouse.x; contextMenu.y = mouse.y;
@@ -243,7 +242,7 @@ Item {
 
           onClicked: function () {
             d.editData = null
-            addCameraDialog.reset()
+            addCameraDialog.resetFields()
             addCameraDialog.open()
           }
         }

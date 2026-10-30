@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick 2.3
 import Hector.Utils 1.0
 
-Object {
+NonVisualItem {
   FontLoader {
     id: fontLoader
     source: "./materialdesignicons-webfont_v6.1.95.ttf"

@@ -1,11 +1,11 @@
 import QtQuick 2.3
-import QtQuick.Controls 2.2
+import QtQuick.Controls.Basic 2.2
 import Ros2 1.0
 import Hector.Utils 1.0
 import "execution"
 import "execution/executionstates.js" as ExecutionStates
 
-Object {
+NonVisualItem {
   id: root
   signal actionRegistered(RobotAction action)
   signal actionUnregistered(RobotAction action)

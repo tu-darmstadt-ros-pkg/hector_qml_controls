@@ -1,5 +1,6 @@
 import QtQuick 2.3
-import QtQuick.Controls 2.2
+import QtQuick.Controls.Basic 2.2
+import QtQuick.Templates as T
 import QtQuick.Layouts 1.1
 import Hector.Utils 1.0
 import Hector.MultiRobot 1.0
@@ -9,7 +10,7 @@ import "internal"
 
 Dialog {
   id: root
-  parent: ApplicationWindow.overlay
+  parent: T.Overlay.overlay
   width: Units.pt(360)
   height: mainLayout.implicitHeight + Units.pt(120)
   x: parent.x + (parent.width - width) / 2
@@ -96,7 +97,7 @@ Dialog {
     streamComboBox.currentIndex = Math.max(0, streamComboBox.indexOfValue(streamIndex))
   }
 
-  function reset() {
+  function resetFields() {
     showAllRobotsCheckBox.checked = false
     cameraComboBox.model = _filteredCameras()
     cameraComboBox.currentIndex = 0
@@ -254,6 +255,6 @@ Dialog {
       streamIndex: streamIndex
     }
     root.save(configuration)
-    reset()
+    resetFields()
   }
 }

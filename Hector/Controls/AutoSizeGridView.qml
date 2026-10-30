@@ -1,5 +1,5 @@
 import QtQuick 2.3
-import QtQuick.Controls 2.2
+import QtQuick.Controls.Basic 2.2
 import QtQuick.Layouts 1.1
 import Hector.Utils 1.0
 
@@ -26,13 +26,13 @@ DropArea {
   onCellWidthChanged: d.layout()
   onVisibleChanged: d.layout()
 
-  onEntered: {
+  onEntered: function(drag) {
     d.showPreview(drag)
     drag.accept()
   }
   onExited: d.hidePreview()
   onPositionChanged: d.updatePreview()
-  onDropped: {
+  onDropped: function(drop) {
     var previousIndex = d.previousIndex
     var visualIndex = d.previewVisualIndex
     var index = 0

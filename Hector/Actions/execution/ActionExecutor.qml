@@ -3,7 +3,7 @@ import Ros2 1.0
 import Hector.Utils 1.0
 import "executionstates.js" as ExecutionStates
 
-Object {
+NonVisualItem {
 
   function execute(action, execution) {
     var entry = d.actionClients[action.topic]

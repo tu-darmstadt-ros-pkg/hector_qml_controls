@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick 2.5
 import QtQuick.Window 2.0
 
-Object {
+NonVisualItem {
   readonly property real pixelsPerMM: Screen.pixelDensity * Screen.devicePixelRatio
   //readonly property real pixelsPerPoint: pixelsPerMM * 25.4 / 72 /* 25.4 = mm per inch, 1 pt = 1/72 in (DTP point) */
   readonly property real pixelsPerPoint: metrics.height / 1000

@@ -9,7 +9,7 @@ import Hector.Utils 1.0
 // The RobotManager will also manage the active robot
 // and the active robot will be the one that is currently being controlled
 
-Object {
+NonVisualItem {
   id: root
   property Robot activeRobot: null
   property var robots: []
@@ -96,7 +96,7 @@ Object {
     messageType: "hector_multi_robot_msgs/msg/RobotAnnouncement"
     qos: Ros2.QoS().transient_local().reliable().keep_last(100)
     throttleRate: 0 // Important, otherwise we might miss announcements that arrive within one frame of each other
-    onNewMessage: {
+    onNewMessage: function(message) {
       if (!message.name || !message.ros_namespace) {
         Ros2.error("Invalid robot announcement message: " + JSON.stringify(message))
         return

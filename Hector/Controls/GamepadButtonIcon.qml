@@ -1,5 +1,5 @@
 import QtQuick 2.3
-import QtGraphicalEffects 1.0
+import QtQuick.Effects
 import Hector.Utils 1.0
 
 // Button-glyph badge for a single gamepad control key. Renders the matching Zacksly controller icon
@@ -60,9 +60,10 @@ Item {
     mipmap: true
   }
 
-  ColorOverlay {
+  MultiEffect {
     anchors.fill: glyph
     source: glyph
-    color: icon.tint
+    colorization: 1.0
+    colorizationColor: icon.tint
   }
 }

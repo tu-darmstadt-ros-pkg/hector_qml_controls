@@ -20,14 +20,14 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
-  <exec_depend>qml-module-qtgraphicaleffects</exec_depend>
-  <exec_depend>qml-module-qtmultimedia</exec_depend>
-  <exec_depend>qml-module-qtquick2</exec_depend>
-  <exec_depend>qml-module-qtquick-controls2</exec_depend>
-  <exec_depend>qml-module-qtquick-layouts</exec_depend>
-  <exec_depend>qml-module-qtquick-window2</exec_depend>
-  <exec_depend>qml_ros2_plugin</exec_depend>
-  <exec_depend>ros_camera_server_qml</exec_depend>
+  <exec_depend>qml6-module-qtmultimedia</exec_depend>
+  <exec_depend>qml6-module-qtquick</exec_depend>
+  <exec_depend>qml6-module-qtquick-controls</exec_depend>
+  <!-- QtQuick.Effects: apt qml6-module-qtquick-effects has no rosdep key; currently only installed via qt6-declarative-dev -->
+  <exec_depend>qml6-module-qtquick-layouts</exec_depend>
+  <exec_depend>qml6-module-qtquick-window</exec_depend>
+  <exec_depend>qml6_ros2_plugin</exec_depend>
+  <exec_depend>ros_camera_server_qml6</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

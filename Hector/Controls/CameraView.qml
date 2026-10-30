@@ -1,8 +1,7 @@
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls.Basic 2.1
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.2
-import QtMultimedia 5.4
 import Ros2 1.0
 import Ros2.CameraServer 1.0
 import Hector.Icons 1.0

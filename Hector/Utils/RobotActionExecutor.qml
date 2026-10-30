@@ -3,7 +3,7 @@ import Ros2 1.0
 import Hector.Actions 1.0
 import Hector.MultiRobot 1.0
 
-Object {
+NonVisualItem {
   id: root
   property real timeout: 15000
   property var action: null

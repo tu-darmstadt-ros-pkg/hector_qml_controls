@@ -1,6 +1,6 @@
 import QtQuick 2.3
-import QtQuick.Controls 2.1
-import QtGraphicalEffects 1.0
+import QtQuick.Controls.Basic 2.1
+import QtQuick.Effects
 
 Item {
   id: root
@@ -30,12 +30,20 @@ Item {
     }
   }
 
-  OpacityMask {
+  // MultiEffect needs a texture provider as mask
+  ShaderEffectSource {
+    id: skeletonMaskSource
+    visible: false
+    sourceItem: skeletonControl.contentItem
+  }
+
+  MultiEffect {
     id: skeletonMask
     visible: root.loading
     anchors.fill: parent
     source: skeletonControl.background
-    maskSource: skeletonControl.contentItem
+    maskEnabled: true
+    maskSource: skeletonMaskSource
 
     SequentialAnimation {
       id: skeletonAnimation

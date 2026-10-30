@@ -1,8 +1,9 @@
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls.Basic 2.1
+import QtQuick.Templates as T
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.2
-import QtMultimedia 5.4
+import QtMultimedia
 import Ros2 1.0
 import Hector.Icons 1.0
 import Hector.Utils 1.0
@@ -45,9 +46,9 @@ Item {
     if (!autoHideControls) controlsState = "default"
   }
   onFullscreenChanged: {
-    // ApplicationWindow.overlay is null in a plain Window (e.g. the popout) — reparenting to null
-    // would make the view vanish irrecoverably
-    const overlay = ApplicationWindow.overlay
+    // T.Overlay.overlay is null while the view has no window, reparenting to null would make the
+    // view vanish irrecoverably
+    const overlay = T.Overlay.overlay
     if (fullscreen && overlay && parent != overlay) {
       d.previousParent = parent
       parent = overlay
@@ -80,7 +81,12 @@ Item {
   VideoOutput {
     id: videoOutput
     anchors.fill: parent
-    source: control.stream
+  }
+
+  Binding {
+    target: control.stream
+    property: "videoSink"
+    value: videoOutput.videoSink
   }
 
   // Latency overlay — semi-transparent pill, always in bottom-right to stay visible without blocking the view

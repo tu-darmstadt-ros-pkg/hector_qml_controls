@@ -7,7 +7,7 @@ import Hector.Utils 1.0
 // The namespace is derived from the hostname of the machine running the UI
 // This allows multiple operators to control robots independently
 
-Object {
+NonVisualItem {
     id: root
 
     readonly property string namespace: HectorRosUtils.sanitizeTopic(Ros2.hostname)

@@ -1,7 +1,7 @@
 import QtQuick 2.3
 import Ros2 1.0
 
-Object {
+NonVisualItem {
   id: root
   
   enum Type {
@@ -86,7 +86,7 @@ Object {
   Subscription {
     topic: namespace + "/parameter_updates"
     enabled: root.type != DynamicReconfigureParameter.Uninitialized
-    onNewMessage: {
+    onNewMessage: function(message) {
       if (root.type == DynamicReconfigureParameter.Uninitialized) return
       let values = message[d.getMemberForType(d.valueType)]
       for (let i = 0; i < values.length; ++i) {
