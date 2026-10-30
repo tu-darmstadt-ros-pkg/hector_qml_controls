@@ -1,8 +1,8 @@
-import QtQuick 2.3
-import QtQuick.Controls.Basic 2.1
-import Hector.Controls 1.0
-import Hector.Utils 1.0
-import Ros2 1.0
+import QtQuick
+import QtQuick.Controls.Basic
+import Hector.Controls
+import Hector.Utils
+import Ros2
 
 // Shows a robot's orientation: a 2D side view tilted by the robot's pitch plus roll/pitch
 // water levels. All robot-specific configuration is provided via properties so this control

@@ -1,7 +1,7 @@
-import QtQuick 2.3
-import QtQuick.Controls.Basic 2.2
-import QtQuick.Layouts 1.1
-import Ros2 1.0
+import QtQuick
+import QtQuick.Controls.Basic
+import QtQuick.Layouts
+import Ros2
 import "."
 
 Item {

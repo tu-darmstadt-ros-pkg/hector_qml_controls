@@ -1,7 +1,7 @@
-import QtQuick 2.0
-import QtQuick.Controls.Basic 2.1
-import Ros2 1.0
-import Hector.MultiRobot 1.0
+import QtQuick
+import QtQuick.Controls.Basic
+import Ros2
+import Hector.MultiRobot
 
 Item {
   id: control

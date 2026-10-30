@@ -1,5 +1,5 @@
-import QtQuick 2.5
-import QtQuick.Controls.Basic 2.1
+import QtQuick
+import QtQuick.Controls.Basic
 
 MouseArea {
   id: root

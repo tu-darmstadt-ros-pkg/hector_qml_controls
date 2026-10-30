@@ -1,8 +1,8 @@
-import QtQuick 2.5
-import QtQuick.Controls.Basic 2.1
-import QtQuick.Layouts 1.1
-import Ros2 1.0
-import Hector.Utils 1.0
+import QtQuick
+import QtQuick.Controls.Basic
+import QtQuick.Layouts
+import Ros2
+import Hector.Utils
 
 Item {
   id: root

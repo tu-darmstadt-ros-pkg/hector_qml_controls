@@ -1,6 +1,6 @@
 pragma Singleton
-import QtQuick 2.3
-import Hector.Utils 1.0
+import QtQuick
+import Hector.Utils
 
 NonVisualItem {
   FontLoader {

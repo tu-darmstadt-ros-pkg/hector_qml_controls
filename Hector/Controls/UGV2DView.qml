@@ -1,7 +1,7 @@
-import QtQuick 2.0
-import QtQuick.Controls.Basic 2.1
-import Hector.Controls 1.0
-import Ros2 1.0
+import QtQuick
+import QtQuick.Controls.Basic
+import Hector.Controls
+import Ros2
 
 // Schematic 2D side-on view of an unmanned ground vehicle showing its pitch and,
 // for tracked robots, the orientation of its flippers. The flipper angles are read

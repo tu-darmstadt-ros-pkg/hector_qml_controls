@@ -15,9 +15,9 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.8
-import QtQuick.Controls 2.8
-import Hector.Icons 1.0
+import QtQuick
+import QtQuick.Controls
+import Hector.Icons
 
 // A TextField with a fuzzy-filtered dropdown.
 //

@@ -1,7 +1,7 @@
-import QtQuick 2.3
-import QtQuick.Controls.Basic 2.3
-import Hector.Icons 1.0
-import Hector.Utils 1.0
+import QtQuick
+import QtQuick.Controls.Basic
+import Hector.Icons
+import Hector.Utils
 
 //! Semi-transparent round button showing a single icon font glyph, meant to be overlaid on views
 //! such as camera images.

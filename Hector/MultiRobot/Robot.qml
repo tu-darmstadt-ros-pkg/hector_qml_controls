@@ -1,7 +1,7 @@
-import QtQuick 2.3
-import Ros2 1.0
-import Hector.Actions 1.0
-import Hector.Utils 1.0
+import QtQuick
+import Ros2
+import Hector.Actions
+import Hector.Utils
 
 NonVisualItem {
   id: root

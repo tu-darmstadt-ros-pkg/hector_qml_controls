@@ -1,7 +1,7 @@
-import QtQuick 2.3
-import QtQuick.Controls.Basic 2.2
-import Ros2 1.0
-import Hector.Utils 1.0
+import QtQuick
+import QtQuick.Controls.Basic
+import Ros2
+import Hector.Utils
 import "execution"
 import "execution/executionstates.js" as ExecutionStates
 

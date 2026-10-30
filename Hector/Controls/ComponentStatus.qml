@@ -1,6 +1,6 @@
-import QtQuick 2.5
-import QtQuick.Layouts 1.1
-import Hector.Utils 1.0
+import QtQuick
+import QtQuick.Layouts
+import Hector.Utils
 
 Item {
   id : control

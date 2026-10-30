@@ -1,12 +1,12 @@
-import QtQuick 2.5
-import QtQuick.Controls.Basic 2.1
+import QtQuick
+import QtQuick.Controls.Basic
 import QtQuick.Templates as T
-import QtQuick.Layouts 1.1
-import QtQuick.Window 2.2
+import QtQuick.Layouts
+import QtQuick.Window
 import QtMultimedia
-import Ros2 1.0
-import Hector.Icons 1.0
-import Hector.Utils 1.0
+import Ros2
+import Hector.Icons
+import Hector.Utils
 import ".."
 
 Item {

@@ -1,6 +1,6 @@
-import QtQuick 2.5
-import QtQuick.Layouts 1.1
-import Hector.Utils 1.0
+import QtQuick
+import QtQuick.Layouts
+import Hector.Utils
 
 // Schematic of an Xbox-style gamepad with callouts describing the function bound to each control.
 // The controller artwork is the bundled xbox-series-controller.svg. Controls that sit together

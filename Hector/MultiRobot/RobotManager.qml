@@ -1,7 +1,7 @@
 pragma Singleton
-import QtQuick 2.3
-import Ros2 1.0
-import Hector.Utils 1.0
+import QtQuick
+import Ros2
+import Hector.Utils
 
 // Manages the available robots
 // Robots should announce themselves on the /robot_announcement topic

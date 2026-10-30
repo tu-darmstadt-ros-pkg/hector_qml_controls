@@ -1,6 +1,6 @@
-import QtQuick 2.3
+import QtQuick
 import QtQuick.Effects
-import Hector.Utils 1.0
+import Hector.Utils
 
 // Button-glyph badge for a single gamepad control key. Renders the matching Zacksly controller icon
 // (svgs/buttons, CC BY 3.0 — see svgs/ATTRIBUTION.md) tinted to fit the theme: face buttons take

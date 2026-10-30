@@ -1,5 +1,5 @@
 pragma Singleton
-import QtQuick 2.0
+import QtQuick
 
 // Robot locomotion type, shared by the 2D robot views (UGV2DView, RobotOrientationView).
 // Mirrors the type set a robot announcement can declare (cf. Hector.MultiRobot Robot.Type).
