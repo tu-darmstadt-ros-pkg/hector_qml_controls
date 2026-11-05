@@ -29,6 +29,9 @@ Item {
 
   //! The CameraStream that provides the video feed and latency info
   property var stream: null
+  //! Optional component drawn on top of the video area. Its stream property is bound to stream.
+  //! If it has an openSettings() function, a button to call it is added to the controls.
+  property Component overlay: null
 
   property alias showFramerate: framerateRectangle.visible
   property alias showLatency: latencyRectangle.visible
@@ -81,6 +84,20 @@ Item {
   VideoOutput {
     id: videoOutput
     anchors.fill: parent
+  }
+
+  Loader {
+    id: overlayLoader
+    readonly property rect area: videoOutput.contentRect
+    readonly property bool rotated: videoOutput.orientation % 180 !== 0
+    x: area.x + (area.width - width) / 2
+    y: area.y + (area.height - height) / 2
+    width: rotated ? area.height : area.width
+    height: rotated ? area.width : area.height
+    rotation: -videoOutput.orientation
+    active: !!control.overlay && !!control.stream
+    sourceComponent: control.overlay
+    onLoaded: item.stream = Qt.binding(() => control.stream)
   }
 
   Binding {
@@ -223,6 +240,13 @@ Item {
       anchors.right: parent.right
       anchors.top: parent.top
       anchors.margins: Units.pt(4)
+
+      OverlayIconButton {
+        implicitWidth: nameLabel.implicitHeight
+        visible: !!overlayLoader.item && typeof overlayLoader.item.openSettings === "function"
+        text: HectorIcons.layers
+        onClicked: overlayLoader.item.openSettings()
+      }
 
       OverlayIconButton {
         implicitWidth: nameLabel.implicitHeight
