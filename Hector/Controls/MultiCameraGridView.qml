@@ -10,6 +10,8 @@ Item {
   property bool transitionsEnabled: true
   property real spacing: Units.pt(4)
   property var selectedCamera: null
+  //! Optional component drawn on top of each camera's video area, see CameraViewImpl
+  property Component cameraOverlay: null
   signal configurationUpdated
   property var configuration
   onConfigurationChanged: {
@@ -147,6 +149,7 @@ Item {
         width: grid.cellWidth - root.spacing; height: grid.cellHeight - root.spacing
         configuration: model.configuration
         orientation: model.orientation
+        overlay: root.cameraOverlay
         showFramerate: false
         showLatency: false
         canGoBack: false

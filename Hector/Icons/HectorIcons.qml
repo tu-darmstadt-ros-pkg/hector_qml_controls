@@ -36,6 +36,7 @@ NonVisualItem {
   readonly property string chevronUp: iconFromCharCode(0xF0143)
   readonly property string exitFullscreen: iconFromCharCode(0xF0294)
   readonly property string fullscreen: iconFromCharCode(0xF0293)
+  readonly property string layers: iconFromCharCode(0xF0328)
   readonly property string pause: iconFromCharCode(0xF03E4)
   readonly property string play: iconFromCharCode(0xF040A)
   readonly property string popout: iconFromCharCode(0xF10AC)

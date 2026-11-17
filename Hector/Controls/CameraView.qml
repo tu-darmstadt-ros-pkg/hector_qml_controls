@@ -30,6 +30,8 @@ Item {
   property alias showFramerate: cameraView.showFramerate
   property alias showLatency: cameraView.showLatency
   property alias controlsState: cameraView.controlsState
+  //! Optional component drawn on top of the video area, see CameraViewImpl
+  property alias overlay: cameraView.overlay
 
   signal backRequested()
 
@@ -97,6 +99,7 @@ Item {
       // In popout window, the camera is already fullscreen
       allowFullscreen: false
       orientation: control.orientation
+      overlay: control.overlay
     }
   }
 }
